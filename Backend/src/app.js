@@ -6,8 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
-  res.send("Server is working");
-});
+const routes = require("./routes");
+app.use("/api", routes);
 
 module.exports = app;
