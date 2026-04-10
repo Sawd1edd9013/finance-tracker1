@@ -6,7 +6,7 @@ module.exports = async function (req, res, next) {
     const token = req.cookies.token;
 
     if (!token) {
-      return res.status(401).send({ error: "No token provided" });
+      return res.status(401).send({ error: "Unauthorized" });
     }
 
     const data = verify(token);

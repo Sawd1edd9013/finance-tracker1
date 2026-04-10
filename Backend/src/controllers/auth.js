@@ -3,14 +3,15 @@ const User = require("../models/user");
 const { generate } = require("../utils/token");
 
 async function register(login, password) {
-  if (!password) {
-    throw new Error("Password is empty");
-  }
-  if (!login) throw new Error("Login is empty");
-  const passwordHash = await bcrypt.hash(password, 10);
+  const existingUser = await User.findOne({ login });
 
-  const user = await User.create({ login, password: passwordHash });
-  const token = generate({ id: user.id });
+  if (existingUser) {
+    throw new Error("Пользователь уже существует");
+  }
+
+  const user = await User.create({ login, password });
+
+  const token = generate({ id: user._id });
 
   return { user, token };
 }

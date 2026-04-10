@@ -1,7 +1,6 @@
 const express = require("express");
 const { register, login, logout } = require("../controllers/auth");
 const mapUser = require("../utils/mapUser");
-
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
