@@ -2,19 +2,25 @@ const express = require("express");
 const {
   createTransaction,
   getTransactions,
+} = require("../controllers/transaction");
+const {
   getAnalytics,
   getCategoryAnalytics,
   getTimeAnalytics,
-} = require("../controllers/transaction");
+} = require("../controllers/transaction-analytics");
 const authenticated = require("../middlewares/authenticated");
 const validateTransaction = require("../middlewares/validateTransaction");
-const mapTransaction = require("../utils/mapTransaction");
+const mapTransaction = require("../mappers/mapTransaction");
+const asyncHandler = require("../utils/asyncHandler");
 
 const router = express.Router();
 
 // create transaction
-router.post("/", authenticated, validateTransaction, async (req, res) => {
-  try {
+router.post(
+  "/",
+  authenticated,
+  validateTransaction,
+  asyncHandler(async (req, res) => {
     const transaction = await createTransaction({
       amount: req.body.amount,
       type: req.body.type,
@@ -25,14 +31,14 @@ router.post("/", authenticated, validateTransaction, async (req, res) => {
     });
 
     res.send({ data: mapTransaction(transaction) });
-  } catch (e) {
-    res.status(400).send({ error: e.message || "Unknown error" });
-  }
-});
+  }),
+);
 
 // get all transactions + filter
-router.get("/", authenticated, async (req, res) => {
-  try {
+router.get(
+  "/",
+  authenticated,
+  asyncHandler(async (req, res) => {
     const transactions = await getTransactions({
       userId: req.user.id,
       from: req.query.from,
@@ -43,40 +49,38 @@ router.get("/", authenticated, async (req, res) => {
     });
 
     res.send({ data: transactions.map(mapTransaction) });
-  } catch (e) {
-    res.status(400).send({ error: e.message || "Unknown error" });
-  }
-});
+  }),
+);
 
 // analytics
-router.get("/analytics", authenticated, async (req, res) => {
-  try {
+router.get(
+  "/analytics",
+  authenticated,
+  asyncHandler(async (req, res) => {
     const data = await getAnalytics(req.user.id);
 
     res.send({ data });
-  } catch (e) {
-    res.status(400).send({ error: e.message || "Unknown error" });
-  }
-});
+  }),
+);
 
-router.get("/analytics/categories", authenticated, async (req, res) => {
-  try {
+router.get(
+  "/analytics/categories",
+  authenticated,
+  asyncHandler(async (req, res) => {
     const data = await getCategoryAnalytics(req.user.id);
 
     res.send({ data });
-  } catch (e) {
-    res.status(400).send({ error: e.message || "Unknown error" });
-  }
-});
+  }),
+);
 
-router.get("/analytics/time", authenticated, async (req, res) => {
-  try {
+router.get(
+  "/analytics/time",
+  authenticated,
+  asyncHandler(async (req, res) => {
     const data = await getTimeAnalytics(req.user.id);
 
     res.send({ data });
-  } catch (e) {
-    res.status(400).send({ error: e.message || "Unknown error" });
-  }
-});
+  }),
+);
 
 module.exports = router;

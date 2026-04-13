@@ -1,25 +1,8 @@
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
+const handleValidationErrors = require("./handleValidationErrors");
 
-const validateCategory = [
+module.exports = [
   body("name").notEmpty().withMessage("Name is required"),
-
-  body("type")
-    .notEmpty()
-    .withMessage("Type is required")
-    .isIn(["income", "expense"])
-    .withMessage("Invalid type"),
-
-  (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      return res.status(400).send({
-        error: errors.array()[0].msg,
-      });
-    }
-
-    next();
-  },
+  body("type").notEmpty().withMessage("Type is required"),
+  handleValidationErrors,
 ];
-
-module.exports = validateCategory;

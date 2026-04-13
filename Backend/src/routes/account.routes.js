@@ -1,13 +1,17 @@
 const express = require("express");
 const { createAccount, getAccounts } = require("../controllers/account");
 const authenticated = require("../middlewares/authenticated");
-const mapAccount = require("../utils/mapAccount");
+const mapAccount = require("../mappers/mapAccount");
 const validateAccount = require("../middlewares/validateAccount");
+const asyncHandler = require("../utils/asyncHandler");
 
 const router = express.Router();
 
-router.post("/", authenticated, validateAccount, async (req, res) => {
-  try {
+router.post(
+  "/",
+  authenticated,
+  validateAccount,
+  asyncHandler(async (req, res) => {
     const newAccount = await createAccount({
       name: req.body.name,
       type: req.body.type,
@@ -15,19 +19,17 @@ router.post("/", authenticated, validateAccount, async (req, res) => {
     });
 
     res.send({ data: mapAccount(newAccount) });
-  } catch (e) {
-    res.status(400).send({ error: e.message || "Unknown error" });
-  }
-});
+  }),
+);
 
-router.get("/", authenticated, async (req, res) => {
-  try {
+router.get(
+  "/",
+  authenticated,
+  asyncHandler(async (req, res) => {
     const accounts = await getAccounts(req.user.id);
 
     res.send({ data: accounts.map(mapAccount) });
-  } catch (e) {
-    res.status(400).send({ error: e.message || "Unknown error" });
-  }
-});
+  }),
+);
 
 module.exports = router;

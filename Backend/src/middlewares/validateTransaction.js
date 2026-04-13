@@ -1,4 +1,5 @@
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
+const handleValidationErrors = require("./handleValidationErrors");
 
 const validateTransaction = [
   body("amount")
@@ -25,17 +26,9 @@ const validateTransaction = [
     .isMongoId()
     .withMessage("Invalid categoryId"),
 
-  (req, res, next) => {
-    const errors = validationResult(req);
+  body("comment").optional().isString().withMessage("Comment must be a string"),
 
-    if (!errors.isEmpty()) {
-      return res.status(400).send({
-        error: errors.array()[0].msg,
-      });
-    }
-
-    next();
-  },
+  handleValidationErrors,
 ];
 
 module.exports = validateTransaction;
