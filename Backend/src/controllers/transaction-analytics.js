@@ -1,4 +1,5 @@
 const buildMatch = require("../utils/buildTransactionMatchStage");
+const Transaction = require("../models/transaction");
 
 async function getAnalytics(userId, filters = {}) {
   const match = buildMatch({

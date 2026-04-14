@@ -17,8 +17,8 @@ export const Register = () => {
             <Input type="text" className="h-12 text-lg" />
           </FormGroup>
 
-          <FormGroup label="Email">
-            <Input type="email" className="h-12 text-lg" />
+          <FormGroup label="Логин">
+            <Input type="text" className="h-12 text-lg" />
           </FormGroup>
 
           <FormGroup label="Пароль">
