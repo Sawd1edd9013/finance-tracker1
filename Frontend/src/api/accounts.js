@@ -15,10 +15,14 @@ export function createAccount({ name, type, balance }) {
   });
 }
 
-export function updateAccount(id, data) {
+export function updateAccount(id, { name, type, balance }) {
   return request(`/accounts/${id}`, {
     method: "PATCH",
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      name,
+      type,
+      balance,
+    }),
   });
 }
 

@@ -6,6 +6,7 @@ module.exports = function (transaction) {
     accountId: transaction.accountId,
     categoryId: transaction.categoryId,
     comment: transaction.comment,
+    date: transaction.date,
     createdAt: transaction.createdAt,
   };
 };

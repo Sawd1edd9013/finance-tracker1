@@ -10,6 +10,3 @@ export * from "./form/TransactionTypeSwitch.jsx";
 export * from "./forms/AccountForm.jsx";
 export * from "./forms/CategoryForm.jsx";
 export * from "./forms/TransactionForm.jsx";
-export * from "./forms/AccountForm.jsx";
-export * from "./forms/CategoryForm.jsx";
-export * from "./forms/TransactionForm.jsx";

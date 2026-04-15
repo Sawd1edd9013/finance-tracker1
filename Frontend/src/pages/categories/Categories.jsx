@@ -1,9 +1,14 @@
 import { PencilIcon, TrashIcon } from "../../components/icon";
 import { PageHeader, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { deleteCategory, getCategories } from "../../api/categories";
+import { CATEGORY_TYPE_LABELS } from "../../constans/categoryTypeLabels";
 
 export const Categories = () => {
+  const [categories, setCategories] = useState([]);
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const columns = [
     { key: "name", title: "Название", align: "left" },
@@ -11,11 +16,32 @@ export const Categories = () => {
     { key: "actions", title: "Действия", align: "center" },
   ];
 
-  const data = [
-    { id: 1, name: "Продукты", type: "Расход" },
-    { id: 2, name: "Зарплата", type: "Доход" },
-    { id: 3, name: "Транспорт", type: "Расход" },
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data.data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      setError("");
+
+      await deleteCategory(id);
+
+      const data = await getCategories();
+      setCategories(data.data);
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
   return (
     <div className="px-8 pt-4 pb-8">
       <PageHeader title="Категории" />
@@ -28,12 +54,16 @@ export const Categories = () => {
             + Добавить категорию
           </button>
         </div>
-
+        {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
         <Table
           columns={columns}
-          data={data}
+          data={categories}
           rowKey={(row) => row.id}
           renderCell={(col, row) => {
+            if (col.key === "type") {
+              return CATEGORY_TYPE_LABELS[row.type] || row.type;
+            }
+
             if (col.key !== "actions") return row[col.key];
 
             return (
@@ -44,7 +74,10 @@ export const Categories = () => {
                 >
                   <PencilIcon />
                 </button>
-                <button className="text-slate-900 hover:text-red-600">
+                <button
+                  onClick={() => handleDelete(row.id)}
+                  className="text-slate-900 hover:text-red-600"
+                >
                   <TrashIcon />
                 </button>
               </div>

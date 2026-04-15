@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TransactionTypeSwitch } from "../form/TransactionTypeSwitch";
 import { FormCard } from "../form/FormCard";
 import { FormGroup } from "../form/FormGroup";
 import { Input } from "../form/Input";
+
+import { getAccounts } from "../../api/accounts";
+import { getCategories } from "../../api/categories";
 
 export const TransactionForm = ({
   mode = "create",
@@ -12,25 +15,37 @@ export const TransactionForm = ({
 }) => {
   const [values, setValues] = useState({
     type: initialValues?.type ?? "income",
-    date: initialValues?.date ?? "",
+    date: initialValues?.date
+      ? new Date(initialValues.date).toISOString().slice(0, 10)
+      : "",
     accountId: initialValues?.accountId ?? "",
     categoryId: initialValues?.categoryId ?? "",
     amount: initialValues?.amount ?? "",
     comment: initialValues?.comment ?? "",
   });
 
-  const accounts = [
-    { id: "1", name: "Дебетовая карта" },
-    { id: "2", name: "Наличные" },
-  ];
-  const categories = [
-    { id: "1", name: "Продукты" },
-    { id: "2", name: "Транспорт" },
-  ];
+  const [accounts, setAccounts] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const setField = (key, val) => setValues((prev) => ({ ...prev, [key]: val }));
 
   const title = mode === "edit" ? "Редактирование операции" : "Новая операция";
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const aRes = await getAccounts();
+        const cRes = await getCategories();
+
+        setAccounts(aRes.data);
+        setCategories(cRes.data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,12 +56,10 @@ export const TransactionForm = ({
     <div className="px-8 pt-4 pb-8">
       <FormCard title={title}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div>
-            <TransactionTypeSwitch
-              value={values.type}
-              onChange={(t) => setField("type", t)}
-            />
-          </div>
+          <TransactionTypeSwitch
+            value={values.type}
+            onChange={(t) => setField("type", t)}
+          />
 
           <FormGroup label="Дата">
             <Input
@@ -60,8 +73,7 @@ export const TransactionForm = ({
             <select
               value={values.accountId}
               onChange={(e) => setField("accountId", e.target.value)}
-              className="h-12 w-full px-4 text-lg rounded-md border border-slate-300 bg-white
-                         focus:outline-none focus:ring-2 focus:ring-slate-400 transition"
+              className="h-12 w-full px-4 text-lg rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 transition"
             >
               <option value="">Выберите счёт</option>
               {accounts.map((a) => (
@@ -76,15 +88,16 @@ export const TransactionForm = ({
             <select
               value={values.categoryId}
               onChange={(e) => setField("categoryId", e.target.value)}
-              className="h-12 w-full px-4 text-lg rounded-md border border-slate-300 bg-white
-                         focus:outline-none focus:ring-2 focus:ring-slate-400 transition"
+              className="h-12 w-full px-4 text-lg rounded-md border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 transition"
             >
               <option value="">Выберите категорию</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {categories
+                .filter((c) => c.type === values.type)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
             </select>
           </FormGroup>
 

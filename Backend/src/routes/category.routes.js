@@ -1,5 +1,10 @@
 const express = require("express");
-const { createCategory, getCategories } = require("../controllers/category");
+const {
+  createCategory,
+  getCategories,
+  updateCategory,
+  deleteCategory,
+} = require("../controllers/category");
 const authenticated = require("../middlewares/authenticated");
 const mapCategory = require("../mappers/mapCategory");
 const validateCategory = require("../middlewares/validateCategory");
@@ -29,6 +34,29 @@ router.get(
     const categories = await getCategories(req.user.id);
 
     res.send({ data: categories.map(mapCategory) });
+  }),
+);
+
+router.delete(
+  "/:id",
+  authenticated,
+  asyncHandler(async (req, res) => {
+    await deleteCategory(req.params.id, req.user.id);
+
+    res.send({ error: null });
+  }),
+);
+
+router.patch(
+  "/:id",
+  authenticated,
+  asyncHandler(async (req, res) => {
+    const updated = await updateCategory(req.params.id, req.user.id, {
+      name: req.body.name,
+      type: req.body.type,
+    });
+
+    res.send({ data: mapCategory(updated) });
   }),
 );
 

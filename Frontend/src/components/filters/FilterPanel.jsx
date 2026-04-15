@@ -1,73 +1,89 @@
-import {
-  ClockIcon,
-  CheckIcon,
-  CategoryIcon,
-  CoinsIcon,
-  ResetIcon,
-} from "../icon";
 import React from "react";
 
-export const FilterPanel = ({ children }) => {
+export const FilterPanel = ({
+  filters,
+  onChange,
+  onReset,
+  accounts = [],
+  categories = [],
+  children,
+}) => {
   return (
-    <div className="bg-white rounded-lg p-6 shadow-md">
-      <div className="flex justify-between mb-6">
-        <div className="flex items-end gap-6">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
-              <ClockIcon />
-              <span className="text-base font-semibold mb-1">Период</span>
-            </div>
-
-            <div className="flex items-end gap-3">
+    <div className="bg-white rounded-lg p-6 shadow-md mb-6">
+      <div className="flex flex-wrap items-end gap-4 justify-between">
+        <div className="flex flex-wrap items-end gap-4">
+          <div>
+            <label className="block text-sm mb-1">Период</label>
+            <div className="flex gap-2">
               <input
                 type="date"
-                className="h-9 px-3 border border-slate-300 rounded-md text-base"
+                value={filters.from}
+                onChange={(e) => onChange("from", e.target.value)}
+                className="h-9 px-3 border rounded-md"
               />
-
-              <span className="self-center text-slate-900 text-base">—</span>
-
               <input
                 type="date"
-                className="h-9 px-3 border border-slate-300 rounded-md text-base"
+                value={filters.to}
+                onChange={(e) => onChange("to", e.target.value)}
+                className="h-9 px-3 border rounded-md"
               />
             </div>
           </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
-              <CheckIcon />
-              <span className="text-base font-semibold mb-1">Счет</span>
-            </div>
-
-            <select className="h-9 min-w-[120px] pl-3 pr-8 border border-slate-300 rounded-md text-base">
-              <option>Все</option>
+          <div>
+            <label className="block text-sm mb-1">Счёт</label>
+            <select
+              value={filters.accountId}
+              onChange={(e) => onChange("accountId", e.target.value)}
+              className="h-9 px-3 border rounded-md"
+            >
+              <option value="">Все</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
             </select>
           </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
-              <CategoryIcon />
-              <span className="text-base font-semibold mb-1">Категория</span>
-            </div>
-
-            <select className="h-9 pl-3 pr-8 border border-slate-300 rounded-md text-base">
-              <option>Все</option>
+          <div>
+            <label className="block text-sm mb-1">Категория</label>
+            <select
+              value={filters.categoryId}
+              onChange={(e) => onChange("categoryId", e.target.value)}
+              className="h-9 px-3 border rounded-md"
+            >
+              <option value="">Все</option>
+              {categories
+                .filter((c) => {
+                  if (!filters.type) return true;
+                  return c.type === filters.type;
+                })
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
             </select>
           </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1">
-              <CoinsIcon />
-              <span className="text-base font-semibold mb-1">Тип</span>
-            </div>
-
-            <select className="h-9 min-w-[120px] pl-3 pr-8 border border-slate-300 rounded-md text-base">
-              <option>Все</option>
+          <div>
+            <label className="block text-sm mb-1">Тип</label>
+            <select
+              value={filters.type}
+              onChange={(e) => onChange("type", e.target.value)}
+              className="h-9 px-3 border rounded-md"
+            >
+              <option value="">Все</option>
+              <option value="income">Доход</option>
+              <option value="expense">Расход</option>
             </select>
           </div>
 
-          <button className="flex items-center gap-2 h-9 px-3 border border-slate-300 rounded-md text-base hover:bg-slate-100">
-            <ResetIcon />
+          <button
+            onClick={onReset}
+            className="h-9 px-4 border rounded-md hover:bg-gray-100"
+          >
             Сбросить
           </button>
         </div>

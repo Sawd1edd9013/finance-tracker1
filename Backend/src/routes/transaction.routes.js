@@ -2,6 +2,8 @@ const express = require("express");
 const {
   createTransaction,
   getTransactions,
+  deleteTransaction,
+  updateTransaction,
 } = require("../controllers/transaction");
 const {
   getAnalytics,
@@ -28,6 +30,7 @@ router.post(
       categoryId: req.body.categoryId,
       comment: req.body.comment,
       userId: req.user.id,
+      date: req.body.date,
     });
 
     res.send({ data: mapTransaction(transaction) });
@@ -80,6 +83,34 @@ router.get(
     const data = await getTimeAnalytics(req.user.id);
 
     res.send({ data });
+  }),
+);
+// delete
+router.delete(
+  "/:id",
+  authenticated,
+  asyncHandler(async (req, res) => {
+    await deleteTransaction(req.params.id, req.user.id);
+
+    res.send({ error: null });
+  }),
+);
+
+// update
+router.patch(
+  "/:id",
+  authenticated,
+  validateTransaction,
+  asyncHandler(async (req, res) => {
+    const updated = await updateTransaction(req.params.id, req.user.id, {
+      amount: Number(req.body.amount),
+      type: req.body.type,
+      accountId: req.body.accountId,
+      categoryId: req.body.categoryId,
+      comment: req.body.comment,
+    });
+
+    res.send({ data: mapTransaction(updated) });
   }),
 );
 

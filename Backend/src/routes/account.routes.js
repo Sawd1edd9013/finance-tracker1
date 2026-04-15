@@ -3,6 +3,7 @@ const {
   createAccount,
   getAccounts,
   deleteAccount,
+  updateAccount,
 } = require("../controllers/account");
 const authenticated = require("../middlewares/authenticated");
 const mapAccount = require("../mappers/mapAccount");
@@ -50,7 +51,6 @@ router.delete(
 router.patch(
   "/:id",
   authenticated,
-  validateAccount,
   asyncHandler(async (req, res) => {
     const updated = await updateAccount(req.params.id, req.user.id, {
       name: req.body.name,
