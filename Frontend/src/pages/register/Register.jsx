@@ -1,17 +1,42 @@
 import { Link, useNavigate } from "react-router-dom";
 import { FormCard, FormGroup, Input } from "../../components";
-import React, { useState } from "react";
-import { registerUser } from "../../api/auth";
+import React, { useState, useEffect } from "react";
+import {
+  selectAuthError,
+  selectAuthIsLoading,
+  selectCurrentUser,
+  selectIsAuthChecked,
+} from "../../store/auth/selectors";
+import { useDispatch, useSelector } from "react-redux";
+import { clearAuthError } from "../../store/auth/actions";
+import { registerThunk } from "../../store/auth/thunks";
 
 export const Register = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const user = useSelector(selectCurrentUser);
+  const isLoading = useSelector(selectAuthIsLoading);
+  const authError = useSelector(selectAuthError);
+  const isAuthChecked = useSelector(selectIsAuthChecked);
 
   const [values, setValues] = useState({
     login: "",
     password: "",
     repeatPassword: "",
   });
-  const [error, setError] = useState("");
+
+  const [localError, setLocalError] = useState("");
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (isAuthChecked && user) {
+      navigate("/");
+    }
+  }, [isAuthChecked, navigate, user]);
 
   const setField = (key, value) => {
     setValues((prev) => ({
@@ -22,16 +47,21 @@ export const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setLocalError("");
     if (values.password !== values.repeatPassword) {
-      setError("Пароли не совпадают");
+      setLocalError("Пароли не совпадают");
       return;
     }
     try {
-      await registerUser({ login: values.login, password: values.password });
+      await dispatch(
+        registerThunk({
+          login: values.login,
+          password: values.password,
+        }),
+      );
       navigate("/");
-    } catch (e) {
-      setError(e.message);
+    } catch {
+      // Ошибка уже сохраняется в Redux
     }
   };
 
@@ -73,13 +103,19 @@ export const Register = () => {
             />
           </FormGroup>
 
-          {error ? <div className="text-sm text-red-600">{error}</div> : null}
+          {localError ? (
+            <div className="text-sm text-red-600">{localError}</div>
+          ) : null}
+          {!localError && authError ? (
+            <div className="text-sm text-red-600">{authError}</div>
+          ) : null}
 
           <button
             type="submit"
-            className="w-full h-12 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition text-xl font-semibold"
+            disabled={isLoading}
+            className="w-full h-12 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition text-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Зарегистрироваться
+            {isLoading ? "Регистрация..." : "Зарегистрироваться"}
           </button>
         </form>
 

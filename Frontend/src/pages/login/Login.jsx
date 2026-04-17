@@ -1,17 +1,39 @@
 import { Link, useNavigate } from "react-router-dom";
 import { FormCard, FormGroup, Input } from "../../components";
-import { loginUser } from "../../api/auth";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectAuthError,
+  selectAuthIsLoading,
+  selectCurrentUser,
+  selectIsAuthChecked,
+} from "../../store/auth/selectors";
+import { clearAuthError } from "../../store/auth/actions";
+import { loginThunk } from "../../store/auth/thunks";
 
 export const Login = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const user = useSelector(selectCurrentUser);
+  const isLoading = useSelector(selectAuthIsLoading);
+  const authError = useSelector(selectAuthError);
+  const isAuthChecked = useSelector(selectIsAuthChecked);
 
   const [values, setValues] = useState({
     login: "",
     password: "",
   });
 
-  const [error, setError] = useState("");
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (isAuthChecked && user) {
+      navigate("/");
+    }
+  }, [isAuthChecked, navigate, user]);
 
   const setField = (key, value) => {
     setValues((prev) => ({
@@ -22,13 +44,12 @@ export const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
     try {
-      await loginUser(values);
+      await dispatch(loginThunk(values));
       navigate("/");
-    } catch (e) {
-      setError(e.message);
+    } catch {
+      // Ошибка уже сохраняется в Redux
     }
   };
 
@@ -60,13 +81,16 @@ export const Login = () => {
             />
           </FormGroup>
 
-          {error ? <div className="text-sm text-red-600">{error}</div> : null}
+          {authError ? (
+            <div className="text-sm text-red-600">{authError}</div>
+          ) : null}
 
           <button
             type="submit"
-            className="w-full h-12 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition text-base font-semibold"
+            disabled={isLoading}
+            className="w-full h-12 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Войти
+            {isLoading ? "Вход..." : "Войти"}
           </button>
         </form>
 

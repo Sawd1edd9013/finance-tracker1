@@ -1,8 +1,18 @@
 import { PageHeader, FormCard, FormGroup, Input } from "../../components";
-import { getUserName, updateUserSettings } from "../../api/auth";
+import { useDispatch, useSelector } from "react-redux";
+import { updateUserSettings } from "../../api/auth";
 import React, { useEffect, useState } from "react";
+import {
+  selectCurrentUser,
+  selectIsAuthChecked,
+} from "../../store/auth/selectors";
+import { fetchCurrentUserThunk } from "../../store/auth/thunks";
 
 export const Settings = () => {
+  const dispatch = useDispatch();
+  const user = useSelector(selectCurrentUser);
+  const isAuthChecked = useSelector(selectIsAuthChecked);
+
   const [values, setValues] = useState({
     login: "",
     password: "",
@@ -13,20 +23,17 @@ export const Settings = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await getUserName();
-        setValues((prev) => ({
-          ...prev,
-          login: res.data.login || "",
-        }));
-      } catch (e) {
-        setError(e.message);
-      }
-    };
+    if (!isAuthChecked) {
+      dispatch(fetchCurrentUserThunk());
+    }
+  }, [dispatch, isAuthChecked]);
 
-    fetchUser();
-  }, []);
+  useEffect(() => {
+    setValues((prev) => ({
+      ...prev,
+      login: user?.login || "",
+    }));
+  }, [user]);
 
   const setField = (key, value) => {
     setValues((prev) => ({
@@ -52,6 +59,8 @@ export const Settings = () => {
         login: values.login.trim(),
         password: values.password,
       });
+
+      await dispatch(fetchCurrentUserThunk());
 
       setValues((prev) => ({
         ...prev,
