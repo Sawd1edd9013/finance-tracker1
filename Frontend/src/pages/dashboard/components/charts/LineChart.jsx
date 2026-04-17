@@ -8,9 +8,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export const LineChartComponent = ({ data }) => {
+export const LineChartComponent = ({ data, height = 250 }) => {
   return (
-    <ResponsiveContainer width="100%" height={250}>
+    <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data}>
         <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
         <XAxis dataKey="date" />
