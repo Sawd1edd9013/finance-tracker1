@@ -23,10 +23,19 @@ module.exports = function buildTransactionMatchStage({
   }
 
   if (from || to) {
-    match.createdAt = {};
+    match.date = {};
 
-    if (from) match.createdAt.$gte = new Date(from);
-    if (to) match.createdAt.$lte = new Date(to);
+    if (from) {
+      const fromDate = new Date(from);
+      fromDate.setHours(0, 0, 0, 0);
+      match.date.$gte = fromDate;
+    }
+
+    if (to) {
+      const toDate = new Date(to);
+      toDate.setHours(23, 59, 59, 999);
+      match.date.$lte = toDate;
+    }
   }
 
   return match;

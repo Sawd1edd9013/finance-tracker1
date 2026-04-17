@@ -1,5 +1,10 @@
 const express = require("express");
-const { register, login, getUserName } = require("../controllers/auth");
+const {
+  register,
+  login,
+  getUserName,
+  updateUserSettings,
+} = require("../controllers/auth");
 const mapUser = require("../mappers/mapUser");
 const asyncHandler = require("../utils/asyncHandler");
 const authenticated = require("../middlewares/authenticated");
@@ -47,5 +52,23 @@ router.post("/logout", (req, res) => {
   res.clearCookie("token");
   res.send({ error: null });
 });
+
+router.patch(
+  "/settings",
+  authenticated,
+  asyncHandler(async (req, res) => {
+    const user = await updateUserSettings(req.user.id, {
+      login: req.body.login,
+      password: req.body.password,
+    });
+
+    res.send({
+      data: {
+        id: user.id,
+        login: user.login,
+      },
+    });
+  }),
+);
 
 module.exports = router;

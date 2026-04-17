@@ -50,6 +50,10 @@ export const Dashboard = () => {
     setPeriod({ from, to });
   };
 
+  const setCustomPeriod = (from, to) => {
+    setPeriod({ from, to });
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -104,10 +108,22 @@ export const Dashboard = () => {
 
     fetchData();
   }, [period]);
+
+  const limitedAccounts = [...accounts]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
+
+  const limitedCategories = [...categories]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
   return (
     <div className="px-8 pt-4 pb-8">
       <div className="mb-4">
-        <PeriodSelector onThisMonth={setThisMonth} onLastMonth={setLastMonth} />
+        <PeriodSelector
+          onThisMonth={setThisMonth}
+          onLastMonth={setLastMonth}
+          onCustomPeriod={setCustomPeriod}
+        />
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-4">
@@ -123,7 +139,7 @@ export const Dashboard = () => {
       <div className="grid grid-cols-2 gap-4 mb-4">
         <Panel title="Счета">
           <MiniList
-            items={accounts.map((a) => `${a.name} — ${a.balance} ₽`)}
+            items={limitedAccounts.map((a) => `${a.name} — ${a.balance} ₽`)}
             footerText="Перейти ко всем →"
             onFooterClick={() => navigate("/accounts")}
           />
@@ -131,7 +147,7 @@ export const Dashboard = () => {
 
         <Panel title="Категории">
           <MiniList
-            items={categories.map(
+            items={limitedCategories.map(
               (c) => `${c.name} — ${c.type === "income" ? "Доход" : "Расход"}`,
             )}
             footerText="Перейти ко всем →"

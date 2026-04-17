@@ -88,7 +88,7 @@ async function getTimeAnalytics(userId, filters = {}) {
         _id: {
           $dateToString: {
             format: "%Y-%m-%d",
-            date: "$createdAt",
+            date: "$date",
           },
         },
         income: {

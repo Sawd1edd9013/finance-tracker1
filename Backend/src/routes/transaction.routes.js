@@ -60,7 +60,7 @@ router.get(
   "/analytics",
   authenticated,
   asyncHandler(async (req, res) => {
-    const data = await getAnalytics(req.user.id);
+    const data = await getAnalytics(req.user.id, req.query);
 
     res.send({ data });
   }),
@@ -70,7 +70,7 @@ router.get(
   "/analytics/categories",
   authenticated,
   asyncHandler(async (req, res) => {
-    const data = await getCategoryAnalytics(req.user.id);
+    const data = await getCategoryAnalytics(req.user.id, req.query);
 
     res.send({ data });
   }),
