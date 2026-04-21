@@ -1,6 +1,15 @@
-import { useEffect, useState, useCallback } from "react";
-import { getAccounts, deleteAccount } from "../../api/accounts";
+import { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { getCategories, deleteCategory } from "../../api/categories";
+import {
+  selectAccounts,
+  selectAccountsError,
+  selectAccountsIsLoading,
+} from "../../store/accounts/selectors";
+import {
+  deleteAccountThunk,
+  fetchAccountsThunk,
+} from "../../store/accounts/thunks";
 
 const useListData = ({ loadList, removeItem, withError }) => {
   const [items, setItems] = useState([]);
@@ -23,8 +32,9 @@ const useListData = ({ loadList, removeItem, withError }) => {
         } else {
           console.error(e);
         }
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     fetchItems();
@@ -56,15 +66,23 @@ const useListData = ({ loadList, removeItem, withError }) => {
 };
 
 export const useAccountsData = () => {
-  const { items, isLoading, handleDelete } = useListData({
-    loadList: getAccounts,
-    removeItem: deleteAccount,
-    withError: false,
-  });
+  const dispatch = useDispatch();
+  const accounts = useSelector(selectAccounts);
+  const isLoading = useSelector(selectAccountsIsLoading);
+  const error = useSelector(selectAccountsError);
+
+  useEffect(() => {
+    dispatch(fetchAccountsThunk());
+  }, [dispatch]);
+
+  const handleDelete = async (id) => {
+    await dispatch(deleteAccountThunk(id));
+  };
 
   return {
-    accounts: items,
+    accounts,
     isLoading,
+    error,
     handleDelete,
   };
 };

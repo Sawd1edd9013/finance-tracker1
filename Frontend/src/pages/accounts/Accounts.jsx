@@ -1,5 +1,5 @@
 import { PencilIcon, TrashIcon } from "../../components/icon";
-import { PageHeader, Table, Loader } from "../../components";
+import { Loader, PageHeader, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
 import { ACCOUNT_TYPE_LABELS } from "../../constans/accountTypeLabels";
 import { useAccountsData } from "../hooks/useEntityListData";
@@ -8,6 +8,7 @@ import React from "react";
 export const Accounts = () => {
   const navigate = useNavigate();
   const { accounts, isLoading, handleDelete } = useAccountsData();
+
   const columns = [
     { key: "name", title: "Название", align: "left" },
     { key: "type", title: "Тип счета", align: "left" },
@@ -18,6 +19,7 @@ export const Accounts = () => {
   return (
     <div className="px-8 pt-4 pb-8">
       <PageHeader title="Счета" />
+
       <div className="bg-white rounded-lg p-6 shadow-md">
         <div className="flex justify-end mb-6">
           <button
@@ -50,6 +52,7 @@ export const Accounts = () => {
                   >
                     <PencilIcon />
                   </button>
+
                   <button
                     onClick={() => handleDelete(row.id)}
                     className="text-slate-900 hover:text-red-600"

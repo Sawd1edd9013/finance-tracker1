@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { TransactionTypeSwitch } from "../form/TransactionTypeSwitch";
 import { FormCard } from "../form/FormCard";
 import { FormGroup } from "../form/FormGroup";
 import { Input } from "../form/Input";
 import { Loader } from "../loader/Loader";
-import { getAccounts } from "../../api/accounts";
+
 import { getCategories } from "../../api/categories";
+import {
+  selectAccounts,
+  selectAccountsIsLoading,
+} from "../../store/accounts/selectors";
+import { fetchAccountsThunk } from "../../store/accounts/thunks";
 
 export const TransactionForm = ({
   mode = "create",
@@ -13,6 +19,10 @@ export const TransactionForm = ({
   onSubmit,
   onCancel,
 }) => {
+  const dispatch = useDispatch();
+  const accounts = useSelector(selectAccounts);
+  const accountsLoading = useSelector(selectAccountsIsLoading);
+
   const [values, setValues] = useState({
     type: initialValues?.type ?? "income",
     date: initialValues?.date
@@ -24,7 +34,6 @@ export const TransactionForm = ({
     comment: initialValues?.comment ?? "",
   });
 
-  const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,13 +42,14 @@ export const TransactionForm = ({
   const title = mode === "edit" ? "Редактирование операции" : "Новая операция";
 
   useEffect(() => {
-    const fetchData = async () => {
+    dispatch(fetchAccountsThunk());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const fetchCategoriesData = async () => {
       try {
         setIsLoading(true);
-        const aRes = await getAccounts();
         const cRes = await getCategories();
-
-        setAccounts(aRes.data);
         setCategories(cRes.data);
       } catch (e) {
         console.error(e);
@@ -48,7 +58,7 @@ export const TransactionForm = ({
       }
     };
 
-    fetchData();
+    fetchCategoriesData();
   }, []);
 
   const handleSubmit = (e) => {
@@ -59,7 +69,7 @@ export const TransactionForm = ({
   return (
     <div className="px-8 pt-4 pb-8">
       <FormCard title={title}>
-        {isLoading ? (
+        {isLoading || accountsLoading ? (
           <Loader />
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">

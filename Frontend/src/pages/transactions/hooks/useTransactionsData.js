@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { getTransactions, deleteTransaction } from "../../../api/transactions";
-import { getAccounts } from "../../../api/accounts";
 import { getCategories } from "../../../api/categories";
+import {
+  selectAccounts,
+  selectAccountsIsLoading,
+  selectAccountsMap,
+} from "../../../store/accounts/selectors";
+import { fetchAccountsThunk } from "../../../store/accounts/thunks";
 
 const INITIAL_FILTERS = {
   from: "",
@@ -12,37 +18,37 @@ const INITIAL_FILTERS = {
 };
 
 export const useTransactionsData = () => {
+  const dispatch = useDispatch();
+
+  const accounts = useSelector(selectAccounts);
+  const accountsMap = useSelector(selectAccountsMap);
+  const accountsLoading = useSelector(selectAccountsIsLoading);
+
   const [transactions, setTransactions] = useState([]);
-  const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [accountsMap, setAccountsMap] = useState({});
   const [categoriesMap, setCategoriesMap] = useState({});
   const [error, setError] = useState("");
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    dispatch(fetchAccountsThunk());
+  }, [dispatch]);
+
+  useEffect(() => {
     const fetchReferenceData = async () => {
       try {
         setError("");
         setIsLoading(true);
-        const accountsResponse = await getAccounts();
+
         const categoriesResponse = await getCategories();
-
-        setAccounts(accountsResponse.data);
         setCategories(categoriesResponse.data);
-
-        const nextAccountsMap = {};
-        accountsResponse.data.forEach((account) => {
-          nextAccountsMap[account.id] = account.name;
-        });
 
         const nextCategoriesMap = {};
         categoriesResponse.data.forEach((category) => {
           nextCategoriesMap[category.id] = category.name;
         });
 
-        setAccountsMap(nextAccountsMap);
         setCategoriesMap(nextCategoriesMap);
       } catch (e) {
         setError(e.message || "Ошибка загрузки данных");
@@ -76,7 +82,7 @@ export const useTransactionsData = () => {
         [key]: value,
       };
 
-      if (key === "type" && prev.categoryId) {
+      if (key === "type") {
         const selectedCategory = categories.find(
           (c) => c.id === prev.categoryId,
         );
@@ -103,12 +109,7 @@ export const useTransactionsData = () => {
       const data = await getTransactions(filters);
       setTransactions(data.data);
 
-      const accountsResponse = await getAccounts();
-      const nextAccountsMap = {};
-      accountsResponse.data.forEach((account) => {
-        nextAccountsMap[account.id] = account.name;
-      });
-      setAccountsMap(nextAccountsMap);
+      await dispatch(fetchAccountsThunk({ force: true }));
     } catch (e) {
       setError(e.message || "Ошибка удаления операции");
     }
@@ -121,7 +122,7 @@ export const useTransactionsData = () => {
     accountsMap,
     categoriesMap,
     error,
-    isLoading,
+    isLoading: isLoading || accountsLoading,
     filters,
     handleFilterChange,
     handleResetFilters,

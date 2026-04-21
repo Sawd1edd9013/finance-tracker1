@@ -1,71 +1,76 @@
-import React, { useState, useEffect } from "react";
-import { getAccounts, updateAccount } from "../../api/accounts";
 import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { AccountForm, Loader } from "../../components";
+import {
+  selectAccountById,
+  selectAccountsError,
+  selectAccountsIsLoaded,
+  selectAccountsIsLoading,
+} from "../../store/accounts/selectors";
+import {
+  fetchAccountsThunk,
+  updateAccountThunk,
+} from "../../store/accounts/thunks";
+import React, { useEffect, useMemo, useState } from "react";
 
 export const EditAccount = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [account, setAccount] = useState(null);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const account = useSelector((state) => selectAccountById(state, id));
+  const storeError = useSelector(selectAccountsError);
+  const isLoaded = useSelector(selectAccountsIsLoaded);
+  const isLoading = useSelector(selectAccountsIsLoading);
+
+  const [localError, setLocalError] = useState("");
 
   useEffect(() => {
-    const fetchAccount = async () => {
-      try {
-        setError("");
-        setIsLoading(true);
-        const data = await getAccounts();
-        const found = data.data.find((acc) => acc.id === id);
+    dispatch(fetchAccountsThunk());
+  }, [dispatch]);
 
-        if (!found) {
-          setError("Счет не найден");
-          return;
-        }
-
-        setAccount(found);
-      } catch (e) {
-        setError(e.message || "Ошибка при загрузке счета");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAccount();
-  }, [id]);
+  const viewError = useMemo(() => {
+    if (localError) return localError;
+    if (storeError) return storeError;
+    if (!isLoaded || isLoading) return null;
+    return account ? null : "Счет не найден";
+  }, [account, isLoaded, isLoading, localError, storeError]);
 
   const handleSubmit = async (values) => {
     try {
-      setError("");
+      setLocalError("");
 
       if (!values.name || !values.type) {
-        setError("Заполните обязательные поля");
+        setLocalError("Заполните обязательные поля");
         return;
       }
 
       const balance = values.balance ? Number(values.balance) : 0;
 
       if (isNaN(balance)) {
-        setError("Баланс должен быть числом");
+        setLocalError("Баланс должен быть числом");
         return;
       }
 
-      await updateAccount(id, {
-        name: values.name,
-        type: values.type,
-        balance,
-      });
+      await dispatch(
+        updateAccountThunk(id, {
+          name: values.name,
+          type: values.type,
+          balance,
+        }),
+      );
 
       navigate("/accounts");
     } catch (e) {
-      setError(e.message || "Ошибка при редактировании счета");
+      setLocalError(e.message || "Ошибка при редактировании счета");
     }
   };
 
   return (
     <div className="px-8 pt-4 pb-8">
-      {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
+      {viewError && (
+        <div className="mb-4 text-red-600 text-sm">{viewError}</div>
+      )}
 
       {isLoading && <Loader />}
 

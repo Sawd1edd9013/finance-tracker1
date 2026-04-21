@@ -1,14 +1,14 @@
 import { PencilIcon, TrashIcon } from "../../components/icon";
-import { PageHeader, Table, Loader } from "../../components";
+import { Loader, PageHeader, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
-import { useCategoriesData } from "../hooks/useEntityListData";
-import { CATEGORY_TYPE_LABELS } from "../../constans/categoryTypeLabels";
 import React from "react";
+import { CATEGORY_TYPE_LABELS } from "../../constans/categoryTypeLabels";
+import { useCategoriesData } from "../hooks/useEntityListData";
 
 export const Categories = () => {
   const { categories, error, isLoading, handleDelete } = useCategoriesData();
-
   const navigate = useNavigate();
+
   const columns = [
     { key: "name", title: "Название", align: "left" },
     { key: "type", title: "Тип", align: "left" },
@@ -18,6 +18,7 @@ export const Categories = () => {
   return (
     <div className="px-8 pt-4 pb-8">
       <PageHeader title="Категории" />
+
       <div className="bg-white rounded-lg p-6 shadow-md">
         <div className="flex justify-end mb-6">
           <button
@@ -27,7 +28,9 @@ export const Categories = () => {
             + Добавить категорию
           </button>
         </div>
+
         {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
+
         {isLoading ? (
           <Loader />
         ) : (
@@ -50,6 +53,7 @@ export const Categories = () => {
                   >
                     <PencilIcon />
                   </button>
+
                   <button
                     onClick={() => handleDelete(row.id)}
                     className="text-slate-900 hover:text-red-600"

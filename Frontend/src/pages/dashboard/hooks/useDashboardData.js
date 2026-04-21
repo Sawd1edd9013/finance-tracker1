@@ -1,19 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { getTransactions } from "../../../api/transactions";
-import { getAccounts } from "../../../api/accounts";
 import { getCategories } from "../../../api/categories";
 import {
   getAnalytics,
   getTimeAnalytics,
   getCategoryAnalytics,
 } from "../../../api/analytics";
+import {
+  selectAccounts,
+  selectAccountsMap,
+} from "../../../store/accounts/selectors";
+import { fetchAccountsThunk } from "../../../store/accounts/thunks";
 
 export const useDashboardData = () => {
+  const dispatch = useDispatch();
+  const accounts = useSelector(selectAccounts);
+  const accountsMap = useSelector(selectAccountsMap);
+
   const [transactions, setTransactions] = useState([]);
-  const [accountsMap, setAccountsMap] = useState({});
   const [categoriesMap, setCategoriesMap] = useState({});
   const [analytics, setAnalytics] = useState(null);
-  const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [period, setPeriod] = useState({ from: null, to: null });
   const [timeData, setTimeData] = useState([]);
@@ -40,6 +47,10 @@ export const useDashboardData = () => {
   };
 
   useEffect(() => {
+    dispatch(fetchAccountsThunk());
+  }, [dispatch]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const params = {};
@@ -49,32 +60,17 @@ export const useDashboardData = () => {
           params.to = period.to.toISOString();
         }
 
-        const [
-          transactionsRes,
-          accRes,
-          catRes,
-          analyticsRes,
-          timeRes,
-          categoryRes,
-        ] = await Promise.all([
-          getTransactions(params),
-          getAccounts(),
-          getCategories(),
-          getAnalytics(params),
-          getTimeAnalytics(params),
-          getCategoryAnalytics(params),
-        ]);
+        const [transactionsRes, catRes, analyticsRes, timeRes, categoryRes] =
+          await Promise.all([
+            getTransactions(params),
+            getCategories(),
+            getAnalytics(params),
+            getTimeAnalytics(params),
+            getCategoryAnalytics(params),
+          ]);
 
         setTransactions(transactionsRes.data.slice(0, 5));
         setAnalytics(analyticsRes.data);
-
-        const accMap = {};
-        accRes.data.forEach((a) => {
-          accMap[a.id] = a.name;
-        });
-
-        setAccountsMap(accMap);
-        setAccounts(accRes.data);
 
         const catMap = {};
         catRes.data.forEach((c) => {
@@ -99,44 +95,28 @@ export const useDashboardData = () => {
     fetchData();
   }, [period]);
 
-  const limitedAccounts = useMemo(
-    () =>
-      [...accounts]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5),
-    [accounts],
-  );
+  const limitedAccounts = useMemo(() => {
+    return accounts.slice(0, 5);
+  }, [accounts]);
 
-  const limitedCategories = useMemo(
-    () =>
-      [...categories]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5),
-    [categories],
-  );
-
-  const totalBalance = useMemo(
-    () =>
-      accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0),
-    [accounts],
-  );
-
-  const netResult =
-    Number(analytics?.totalIncome || 0) - Number(analytics?.totalExpense || 0);
+  const limitedCategories = useMemo(() => {
+    return categories.slice(0, 5);
+  }, [categories]);
 
   return {
     transactions,
+    accounts,
     accountsMap,
+    categories,
     categoriesMap,
     analytics,
+    period,
+    setThisMonth,
+    setLastMonth,
+    setCustomPeriod,
     timeData,
     categoryData,
     limitedAccounts,
     limitedCategories,
-    totalBalance,
-    netResult,
-    setThisMonth,
-    setLastMonth,
-    setCustomPeriod,
   };
 };
