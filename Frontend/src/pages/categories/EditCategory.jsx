@@ -1,63 +1,77 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { CategoryForm, Loader } from "../../components";
-import { getCategories, updateCategory } from "../../api/categories";
+import {
+  selectCategoriesError,
+  selectCategoriesIsLoaded,
+  selectCategoriesIsLoading,
+  selectCategoryById,
+} from "../../store/categories/selectors";
+import {
+  fetchCategoriesThunk,
+  updateCategoryThunk,
+} from "../../store/categories/thunks";
 
 export const EditCategory = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [category, setCategory] = useState(null);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const category = useSelector((state) => selectCategoryById(state, id));
+  const storeError = useSelector(selectCategoriesError);
+  const isLoaded = useSelector(selectCategoriesIsLoaded);
+  const isLoading = useSelector(selectCategoriesIsLoading);
+
+  const [localError, setLocalError] = useState("");
 
   useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        setError("");
-        setIsLoading(true);
-        const data = await getCategories();
-        const foundCategory = data.data.find((item) => item.id === id);
+    dispatch(fetchCategoriesThunk());
+  }, [dispatch]);
 
-        if (!foundCategory) {
-          setError("Категория не найдена");
-          return;
-        }
+  const viewError = useMemo(() => {
+    if (localError) {
+      return localError;
+    }
 
-        setCategory(foundCategory);
-      } catch (e) {
-        setError(e.message || "Ошибка при загрузке категории");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (storeError) {
+      return storeError;
+    }
 
-    fetchCategory();
-  }, [id]);
+    if (!isLoaded || isLoading) {
+      return null;
+    }
+
+    return category ? null : "Категория не найдена";
+  }, [category, isLoaded, isLoading, localError, storeError]);
 
   const handleSubmit = async (values) => {
     try {
-      setError("");
+      setLocalError("");
 
       if (!values.name || !values.type) {
-        setError("Заполните все поля");
+        setLocalError("Заполните все поля");
         return;
       }
 
-      await updateCategory(id, {
-        name: values.name,
-        type: values.type,
-      });
+      await dispatch(
+        updateCategoryThunk(id, {
+          name: values.name,
+          type: values.type,
+        }),
+      );
 
       navigate("/categories");
     } catch (e) {
-      setError(e.message || "Ошибка при редактировании категории");
+      setLocalError(e.message || "Ошибка при редактировании категории");
     }
   };
 
   return (
     <div className="px-8 pt-4 pb-8">
-      {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
+      {viewError && (
+        <div className="mb-4 text-red-600 text-sm">{viewError}</div>
+      )}
 
       {isLoading && <Loader />}
 

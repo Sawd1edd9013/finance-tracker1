@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getTransactions, deleteTransaction } from "../../../api/transactions";
-import { getCategories } from "../../../api/categories";
 import {
   selectAccounts,
   selectAccountsIsLoading,
   selectAccountsMap,
 } from "../../../store/accounts/selectors";
 import { fetchAccountsThunk } from "../../../store/accounts/thunks";
+import {
+  selectCategories,
+  selectCategoriesIsLoading,
+  selectCategoriesMap,
+} from "../../../store/categories/selectors";
+import { fetchCategoriesThunk } from "../../../store/categories/thunks";
 
 const INITIAL_FILTERS = {
   from: "",
@@ -24,51 +29,32 @@ export const useTransactionsData = () => {
   const accountsMap = useSelector(selectAccountsMap);
   const accountsLoading = useSelector(selectAccountsIsLoading);
 
+  const categories = useSelector(selectCategories);
+  const categoriesMap = useSelector(selectCategoriesMap);
+  const categoriesLoading = useSelector(selectCategoriesIsLoading);
+
   const [transactions, setTransactions] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [categoriesMap, setCategoriesMap] = useState({});
   const [error, setError] = useState("");
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     dispatch(fetchAccountsThunk());
+    dispatch(fetchCategoriesThunk());
   }, [dispatch]);
-
-  useEffect(() => {
-    const fetchReferenceData = async () => {
-      try {
-        setError("");
-        setIsLoading(true);
-
-        const categoriesResponse = await getCategories();
-        setCategories(categoriesResponse.data);
-
-        const nextCategoriesMap = {};
-        categoriesResponse.data.forEach((category) => {
-          nextCategoriesMap[category.id] = category.name;
-        });
-
-        setCategoriesMap(nextCategoriesMap);
-      } catch (e) {
-        setError(e.message || "Ошибка загрузки данных");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchReferenceData();
-  }, []);
 
   useEffect(() => {
     const fetchTransactionsData = async () => {
       try {
         setError("");
+        setIsLoading(true);
 
         const data = await getTransactions(filters);
         setTransactions(data.data);
       } catch (e) {
         setError(e.message || "Ошибка загрузки операций");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -82,7 +68,7 @@ export const useTransactionsData = () => {
         [key]: value,
       };
 
-      if (key === "type") {
+      if (key === "type" && prev.categoryId) {
         const selectedCategory = categories.find(
           (c) => c.id === prev.categoryId,
         );
@@ -122,7 +108,7 @@ export const useTransactionsData = () => {
     accountsMap,
     categoriesMap,
     error,
-    isLoading: isLoading || accountsLoading,
+    isLoading: isLoading || accountsLoading || categoriesLoading,
     filters,
     handleFilterChange,
     handleResetFilters,

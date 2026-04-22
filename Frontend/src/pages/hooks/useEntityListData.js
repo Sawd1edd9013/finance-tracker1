@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getCategories, deleteCategory } from "../../api/categories";
 import {
   selectAccounts,
   selectAccountsError,
@@ -10,60 +9,15 @@ import {
   deleteAccountThunk,
   fetchAccountsThunk,
 } from "../../store/accounts/thunks";
-
-const useListData = ({ loadList, removeItem, withError }) => {
-  const [items, setItems] = useState([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  const reload = useCallback(async () => {
-    const data = await loadList();
-    setItems(data.data);
-  }, [loadList]);
-
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        setIsLoading(true);
-        await reload();
-      } catch (e) {
-        if (withError) {
-          setError(e.message);
-        } else {
-          console.error(e);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchItems();
-  }, [reload, withError]);
-
-  const handleDelete = async (id) => {
-    try {
-      if (withError) {
-        setError("");
-      }
-
-      await removeItem(id);
-      await reload();
-    } catch (e) {
-      if (withError) {
-        setError(e.message);
-      } else {
-        console.error(e);
-      }
-    }
-  };
-
-  return {
-    items,
-    error,
-    isLoading,
-    handleDelete,
-  };
-};
+import {
+  selectCategories,
+  selectCategoriesError,
+  selectCategoriesIsLoading,
+} from "../../store/categories/selectors";
+import {
+  deleteCategoryThunk,
+  fetchCategoriesThunk,
+} from "../../store/categories/thunks";
 
 export const useAccountsData = () => {
   const dispatch = useDispatch();
@@ -88,14 +42,21 @@ export const useAccountsData = () => {
 };
 
 export const useCategoriesData = () => {
-  const { items, error, isLoading, handleDelete } = useListData({
-    loadList: getCategories,
-    removeItem: deleteCategory,
-    withError: true,
-  });
+  const dispatch = useDispatch();
+  const categories = useSelector(selectCategories);
+  const isLoading = useSelector(selectCategoriesIsLoading);
+  const error = useSelector(selectCategoriesError);
+
+  useEffect(() => {
+    dispatch(fetchCategoriesThunk());
+  }, [dispatch]);
+
+  const handleDelete = async (id) => {
+    await dispatch(deleteCategoryThunk(id));
+  };
 
   return {
-    categories: items,
+    categories,
     error,
     isLoading,
     handleDelete,

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getTransactions } from "../../../api/transactions";
-import { getCategories } from "../../../api/categories";
 import {
   getAnalytics,
   getTimeAnalytics,
@@ -12,16 +11,22 @@ import {
   selectAccountsMap,
 } from "../../../store/accounts/selectors";
 import { fetchAccountsThunk } from "../../../store/accounts/thunks";
+import {
+  selectCategories,
+  selectCategoriesMap,
+} from "../../../store/categories/selectors";
+import { fetchCategoriesThunk } from "../../../store/categories/thunks";
 
 export const useDashboardData = () => {
   const dispatch = useDispatch();
+
   const accounts = useSelector(selectAccounts);
   const accountsMap = useSelector(selectAccountsMap);
+  const categories = useSelector(selectCategories);
+  const categoriesMap = useSelector(selectCategoriesMap);
 
   const [transactions, setTransactions] = useState([]);
-  const [categoriesMap, setCategoriesMap] = useState({});
   const [analytics, setAnalytics] = useState(null);
-  const [categories, setCategories] = useState([]);
   const [period, setPeriod] = useState({ from: null, to: null });
   const [timeData, setTimeData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
@@ -30,7 +35,6 @@ export const useDashboardData = () => {
     const now = new Date();
     const from = new Date(now.getFullYear(), now.getMonth(), 1);
     const to = new Date();
-
     setPeriod({ from, to });
   };
 
@@ -38,7 +42,6 @@ export const useDashboardData = () => {
     const now = new Date();
     const from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const to = new Date(now.getFullYear(), now.getMonth(), 0);
-
     setPeriod({ from, to });
   };
 
@@ -48,6 +51,7 @@ export const useDashboardData = () => {
 
   useEffect(() => {
     dispatch(fetchAccountsThunk());
+    dispatch(fetchCategoriesThunk());
   }, [dispatch]);
 
   useEffect(() => {
@@ -60,10 +64,9 @@ export const useDashboardData = () => {
           params.to = period.to.toISOString();
         }
 
-        const [transactionsRes, catRes, analyticsRes, timeRes, categoryRes] =
+        const [transactionsRes, analyticsRes, timeRes, categoryRes] =
           await Promise.all([
             getTransactions(params),
-            getCategories(),
             getAnalytics(params),
             getTimeAnalytics(params),
             getCategoryAnalytics(params),
@@ -71,18 +74,10 @@ export const useDashboardData = () => {
 
         setTransactions(transactionsRes.data.slice(0, 5));
         setAnalytics(analyticsRes.data);
-
-        const catMap = {};
-        catRes.data.forEach((c) => {
-          catMap[c.id] = c.name;
-        });
-
-        setCategoriesMap(catMap);
-        setCategories(catRes.data);
         setTimeData(timeRes.data);
 
         const formattedCategoryData = categoryRes.data.map((item) => ({
-          name: catMap[item.categoryId] || "Без категории",
+          name: categoriesMap[item.categoryId] || "Без категории",
           value: item.total,
         }));
 
@@ -93,15 +88,32 @@ export const useDashboardData = () => {
     };
 
     fetchData();
-  }, [period]);
+  }, [categoriesMap, period]);
 
-  const limitedAccounts = useMemo(() => {
-    return accounts.slice(0, 5);
-  }, [accounts]);
+  const limitedAccounts = useMemo(
+    () =>
+      [...accounts]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5),
+    [accounts],
+  );
 
-  const limitedCategories = useMemo(() => {
-    return categories.slice(0, 5);
-  }, [categories]);
+  const limitedCategories = useMemo(
+    () =>
+      [...categories]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5),
+    [categories],
+  );
+
+  const totalBalance = useMemo(
+    () =>
+      accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0),
+    [accounts],
+  );
+
+  const netResult =
+    Number(analytics?.totalIncome || 0) - Number(analytics?.totalExpense || 0);
 
   return {
     transactions,
@@ -118,5 +130,7 @@ export const useDashboardData = () => {
     categoryData,
     limitedAccounts,
     limitedCategories,
+    totalBalance,
+    netResult,
   };
 };
