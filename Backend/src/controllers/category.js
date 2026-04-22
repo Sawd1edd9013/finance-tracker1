@@ -12,8 +12,30 @@ async function createCategory({ name, type, userId }) {
 }
 
 // get
-async function getCategories(userId) {
-  return Category.find({ userId });
+async function getCategories(userId, { page = 1, limit = 10 } = {}) {
+  const normalizedPage = Math.max(Number(page) || 1, 1);
+  const normalizedLimit = Math.max(Number(limit) || 10, 1);
+  const skip = (normalizedPage - 1) * normalizedLimit;
+
+  const [data, total] = await Promise.all([
+    Category.find({ userId })
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(normalizedLimit),
+    Category.countDocuments({ userId }),
+  ]);
+
+  const pages = Math.ceil(total / normalizedLimit) || 1;
+
+  return {
+    data,
+    pagination: {
+      page: normalizedPage,
+      limit: normalizedLimit,
+      total,
+      pages,
+    },
+  };
 }
 
 // update

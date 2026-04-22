@@ -1,7 +1,14 @@
 import { request } from "./request";
 
-export function getAccounts() {
-  return request("/accounts");
+export function getAccounts(params = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (params.page) searchParams.append("page", String(params.page));
+  if (params.limit) searchParams.append("limit", String(params.limit));
+
+  const query = searchParams.toString();
+
+  return request(`/accounts${query ? `?${query}` : ""}`);
 }
 
 export function createAccount({ name, type, balance }) {

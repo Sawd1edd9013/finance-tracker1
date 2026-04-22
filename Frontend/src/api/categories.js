@@ -1,7 +1,14 @@
 import { request } from "./request";
 
-export function getCategories() {
-  return request("/categories");
+export function getCategories(params = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (params.page) searchParams.append("page", String(params.page));
+  if (params.limit) searchParams.append("limit", String(params.limit));
+
+  const query = searchParams.toString();
+
+  return request(`/categories${query ? `?${query}` : ""}`);
 }
 
 export function createCategory({ name, type }) {

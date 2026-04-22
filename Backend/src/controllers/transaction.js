@@ -42,6 +42,8 @@ async function getTransactions({
   type,
   categoryId,
   accountId,
+  page = 1,
+  limit = 10,
 }) {
   const filter = buildFilter({
     userId,
@@ -52,7 +54,29 @@ async function getTransactions({
     accountId,
   });
 
-  return Transaction.find(filter).sort({ createdAt: -1 });
+  const normalizedPage = Math.max(Number(page) || 1, 1);
+  const normalizedLimit = Math.max(Number(limit) || 10, 1);
+  const skip = (normalizedPage - 1) * normalizedLimit;
+
+  const [data, total] = await Promise.all([
+    Transaction.find(filter)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(normalizedLimit),
+    Transaction.countDocuments(filter),
+  ]);
+
+  const pages = Math.ceil(total / normalizedLimit) || 1;
+
+  return {
+    data,
+    pagination: {
+      page: normalizedPage,
+      limit: normalizedLimit,
+      total,
+      pages,
+    },
+  };
 }
 
 // delete

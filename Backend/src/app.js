@@ -13,7 +13,7 @@ app.use((err, req, res, next) => {
   console.error(err);
 
   res.status(400).send({
-    error: err.message || "Unknown error",
+    error: err.message || "Неизвестная ошибка",
   });
 });
 

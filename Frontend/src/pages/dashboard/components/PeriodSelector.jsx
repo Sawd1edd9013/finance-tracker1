@@ -13,8 +13,8 @@ export const PeriodSelector = ({
   const buttonClassName = (periodType) =>
     `h-8 px-3 text-base rounded-md border transition-colors ${
       selectedPeriod === periodType
-        ? "border-blue-600 bg-blue-50 text-blue-700"
-        : "border-slate-300 bg-white hover:bg-slate-50"
+        ? "border-slate-800 bg-slate-800 text-white"
+        : "border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
     }`;
 
   const handleThisMonth = () => {

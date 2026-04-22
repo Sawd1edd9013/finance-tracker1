@@ -7,7 +7,9 @@ import React from "react";
 
 export const Accounts = () => {
   const navigate = useNavigate();
-  const { accounts, isLoading, handleDelete } = useAccountsData();
+
+  const { accounts, page, setPage, pagination, isLoading, handleDelete } =
+    useAccountsData();
 
   const columns = [
     { key: "name", title: "Название", align: "left" },
@@ -33,36 +35,59 @@ export const Accounts = () => {
         {isLoading ? (
           <Loader />
         ) : (
-          <Table
-            columns={columns}
-            data={accounts}
-            rowKey={(row) => row.id}
-            renderCell={(col, row) => {
-              if (col.key === "type") {
-                return ACCOUNT_TYPE_LABELS[row.type] || row.type;
-              }
+          <>
+            <Table
+              columns={columns}
+              data={accounts}
+              rowKey={(row) => row.id}
+              renderCell={(col, row) => {
+                if (col.key === "type") {
+                  return ACCOUNT_TYPE_LABELS[row.type] || row.type;
+                }
 
-              if (col.key !== "actions") return row[col.key];
+                if (col.key !== "actions") return row[col.key];
 
-              return (
-                <div className="flex justify-center gap-3">
+                return (
+                  <div className="flex justify-center gap-3">
+                    <button
+                      onClick={() => navigate(`/accounts/${row.id}/edit`)}
+                      className="text-slate-900 hover:text-slate-800"
+                    >
+                      <PencilIcon />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(row.id)}
+                      className="text-slate-900 hover:text-red-600"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                );
+              }}
+            />
+
+            {pagination.pages > 1 && (
+              <div className="mt-6 flex justify-center gap-2">
+                {Array.from(
+                  { length: pagination.pages },
+                  (_, index) => index + 1,
+                ).map((pageNumber) => (
                   <button
-                    onClick={() => navigate(`/accounts/${row.id}/edit`)}
-                    className="text-slate-900 hover:text-slate-800"
+                    key={pageNumber}
+                    onClick={() => setPage(pageNumber)}
+                    className={`h-9 min-w-9 px-3 rounded-md border ${
+                      page === pageNumber
+                        ? "bg-slate-800 text-white border-slate-800"
+                        : "bg-white text-slate-800 border-slate-300 hover:bg-slate-100"
+                    }`}
                   >
-                    <PencilIcon />
+                    {pageNumber}
                   </button>
-
-                  <button
-                    onClick={() => handleDelete(row.id)}
-                    className="text-slate-900 hover:text-red-600"
-                  >
-                    <TrashIcon />
-                  </button>
-                </div>
-              );
-            }}
-          />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

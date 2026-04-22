@@ -32,9 +32,15 @@ router.get(
   "/",
   authenticated,
   asyncHandler(async (req, res) => {
-    const accounts = await getAccounts(req.user.id);
+    const result = await getAccounts(req.user.id, {
+      page: req.query.page,
+      limit: req.query.limit,
+    });
 
-    res.send({ data: accounts.map(mapAccount) });
+    res.send({
+      data: result.data.map(mapAccount),
+      pagination: result.pagination,
+    });
   }),
 );
 

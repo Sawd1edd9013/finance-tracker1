@@ -22,13 +22,13 @@ async function login(login, password) {
   const user = await User.findOne({ login });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("Пользователь не найден");
   }
 
   const isPasswordMatch = await bcrypt.compare(password, user.password);
 
   if (!isPasswordMatch) {
-    throw new Error("Wrong password");
+    throw new Error("Неверный пароль");
   }
 
   const token = generate({ id: user.id });
@@ -40,7 +40,7 @@ async function getUserName(userId) {
   const user = await User.findById(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("Пользователь не найден");
   }
 
   return user;
@@ -50,7 +50,7 @@ async function updateUserSettings(userId, { login, password }) {
   const user = await User.findById(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("Пользователь не найден");
   }
 
   const nextLogin = typeof login === "string" ? login.trim() : "";

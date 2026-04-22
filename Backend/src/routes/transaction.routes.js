@@ -42,16 +42,21 @@ router.get(
   "/",
   authenticated,
   asyncHandler(async (req, res) => {
-    const transactions = await getTransactions({
+    const result = await getTransactions({
       userId: req.user.id,
       from: req.query.from,
       to: req.query.to,
       type: req.query.type,
       categoryId: req.query.categoryId,
       accountId: req.query.accountId,
+      page: req.query.page,
+      limit: req.query.limit,
     });
 
-    res.send({ data: transactions.map(mapTransaction) });
+    res.send({
+      data: result.data.map(mapTransaction),
+      pagination: result.pagination,
+    });
   }),
 );
 

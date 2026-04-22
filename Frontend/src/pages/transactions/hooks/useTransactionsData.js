@@ -22,6 +22,8 @@ const INITIAL_FILTERS = {
   type: "",
 };
 
+const PAGE_LIMIT = 10;
+
 export const useTransactionsData = () => {
   const dispatch = useDispatch();
 
@@ -34,6 +36,13 @@ export const useTransactionsData = () => {
   const categoriesLoading = useSelector(selectCategoriesIsLoading);
 
   const [transactions, setTransactions] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: PAGE_LIMIT,
+    total: 0,
+    pages: 1,
+  });
+  const [page, setPage] = useState(1);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,8 +58,21 @@ export const useTransactionsData = () => {
         setError("");
         setIsLoading(true);
 
-        const data = await getTransactions(filters);
+        const data = await getTransactions({
+          ...filters,
+          page,
+          limit: PAGE_LIMIT,
+        });
+
         setTransactions(data.data);
+        setPagination(
+          data.pagination || {
+            page,
+            limit: PAGE_LIMIT,
+            total: data.data.length,
+            pages: 1,
+          },
+        );
       } catch (e) {
         setError(e.message || "Ошибка загрузки операций");
       } finally {
@@ -59,9 +81,11 @@ export const useTransactionsData = () => {
     };
 
     fetchTransactionsData();
-  }, [filters]);
+  }, [filters, page]);
 
   const handleFilterChange = (key, value) => {
+    setPage(1);
+
     setFilters((prev) => {
       const next = {
         ...prev,
@@ -83,6 +107,7 @@ export const useTransactionsData = () => {
   };
 
   const handleResetFilters = () => {
+    setPage(1);
     setFilters(INITIAL_FILTERS);
   };
 
@@ -92,8 +117,21 @@ export const useTransactionsData = () => {
 
       await deleteTransaction(id);
 
-      const data = await getTransactions(filters);
+      const data = await getTransactions({
+        ...filters,
+        page,
+        limit: PAGE_LIMIT,
+      });
+
       setTransactions(data.data);
+      setPagination(
+        data.pagination || {
+          page,
+          limit: PAGE_LIMIT,
+          total: data.data.length,
+          pages: 1,
+        },
+      );
 
       await dispatch(fetchAccountsThunk({ force: true }));
     } catch (e) {
@@ -110,6 +148,9 @@ export const useTransactionsData = () => {
     error,
     isLoading: isLoading || accountsLoading || categoriesLoading,
     filters,
+    page,
+    setPage,
+    pagination,
     handleFilterChange,
     handleResetFilters,
     handleDelete,

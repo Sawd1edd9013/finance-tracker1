@@ -4,29 +4,32 @@ const handleValidationErrors = require("./handleValidationErrors");
 const validateTransaction = [
   body("amount")
     .notEmpty()
-    .withMessage("Amount is required")
+    .withMessage("Сумма обязательна")
     .isFloat({ gt: 0 })
-    .withMessage("Amount must be greater than 0"),
+    .withMessage("Сумма должна быть больше 0"),
 
   body("type")
     .notEmpty()
-    .withMessage("Type is required")
+    .withMessage("Тип обязателен")
     .isIn(["income", "expense"])
-    .withMessage("Invalid type"),
+    .withMessage("Некорректный тип"),
 
   body("accountId")
     .notEmpty()
-    .withMessage("AccountId is required")
+    .withMessage("Счет обязателен")
     .isMongoId()
-    .withMessage("Invalid accountId"),
+    .withMessage("Некорректный идентификатор счета"),
 
   body("categoryId")
     .notEmpty()
-    .withMessage("CategoryId is required")
+    .withMessage("Категория обязательна")
     .isMongoId()
-    .withMessage("Invalid categoryId"),
+    .withMessage("Некорректный идентификатор категории"),
 
-  body("comment").optional().isString().withMessage("Comment must be a string"),
+  body("comment")
+    .optional()
+    .isString()
+    .withMessage("Комментарий должен быть строкой"),
 
   handleValidationErrors,
 ];

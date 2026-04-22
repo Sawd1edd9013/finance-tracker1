@@ -31,9 +31,15 @@ router.get(
   "/",
   authenticated,
   asyncHandler(async (req, res) => {
-    const categories = await getCategories(req.user.id);
+    const result = await getCategories(req.user.id, {
+      page: req.query.page,
+      limit: req.query.limit,
+    });
 
-    res.send({ data: categories.map(mapCategory) });
+    res.send({
+      data: result.data.map(mapCategory),
+      pagination: result.pagination,
+    });
   }),
 );
 
