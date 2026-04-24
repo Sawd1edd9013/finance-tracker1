@@ -6,7 +6,7 @@ import {
   selectIsAuthChecked,
 } from "../../store/auth/selectors";
 import { fetchCurrentUserThunk, logoutThunk } from "../../store/auth/thunks";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function Layout() {
   const dispatch = useDispatch();
@@ -14,6 +14,7 @@ export default function Layout() {
 
   const user = useSelector(selectCurrentUser);
   const isAuthChecked = useSelector(selectIsAuthChecked);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     dispatch(fetchCurrentUserThunk());
@@ -27,10 +28,11 @@ export default function Layout() {
 
   const handleLogout = async () => {
     try {
+      setError("");
       await dispatch(logoutThunk());
       navigate("/login");
     } catch (error) {
-      console.error(error);
+      setError(error.message || "Ошибка при выходе из аккаунта");
     }
   };
 
@@ -97,6 +99,9 @@ export default function Layout() {
         </nav>
 
         <div className="flex flex-col gap-3 text-lg mt-auto mb-10">
+          {error ? (
+            <div className="mb-4 text-red-600 text-sm">{error}</div>
+          ) : null}
           <div className="flex items-center gap-2">
             <UserIcon />
             <span>{user?.login || "..."}</span>

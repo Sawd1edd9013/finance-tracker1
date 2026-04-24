@@ -8,8 +8,15 @@ import React from "react";
 export const Accounts = () => {
   const navigate = useNavigate();
 
-  const { accounts, page, setPage, pagination, isLoading, handleDelete } =
-    useAccountsData();
+  const {
+    accounts,
+    error,
+    page,
+    setPage,
+    pagination,
+    isLoading,
+    handleDelete,
+  } = useAccountsData();
 
   const columns = [
     { key: "name", title: "Название", align: "left" },
@@ -31,6 +38,10 @@ export const Accounts = () => {
             + Добавить счет
           </button>
         </div>
+
+        {error ? (
+          <div className="mb-4 text-red-600 text-sm">{error}</div>
+        ) : null}
 
         {isLoading ? (
           <Loader />

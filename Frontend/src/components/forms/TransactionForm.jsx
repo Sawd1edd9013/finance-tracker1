@@ -9,6 +9,7 @@ import { Loader } from "../loader/Loader";
 import { getCategories } from "../../api/categories";
 import {
   selectAccounts,
+  selectAccountsError,
   selectAccountsIsLoading,
 } from "../../store/accounts/selectors";
 import { fetchAccountsThunk } from "../../store/accounts/thunks";
@@ -21,6 +22,7 @@ export const TransactionForm = ({
 }) => {
   const dispatch = useDispatch();
   const accounts = useSelector(selectAccounts);
+  const accountsError = useSelector(selectAccountsError);
   const accountsLoading = useSelector(selectAccountsIsLoading);
 
   const [values, setValues] = useState({
@@ -36,6 +38,7 @@ export const TransactionForm = ({
 
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const setField = (key, val) => setValues((prev) => ({ ...prev, [key]: val }));
 
@@ -48,11 +51,12 @@ export const TransactionForm = ({
   useEffect(() => {
     const fetchCategoriesData = async () => {
       try {
+        setError("");
         setIsLoading(true);
         const cRes = await getCategories();
         setCategories(cRes.data);
       } catch (e) {
-        console.error(e);
+        setError(e.message || "Ошибка загрузки категорий");
       } finally {
         setIsLoading(false);
       }
@@ -68,6 +72,10 @@ export const TransactionForm = ({
 
   return (
     <div className="px-8 pt-4 pb-8">
+      {error ? <div className="mb-4 text-red-600 text-sm">{error}</div> : null}
+      {accountsError ? (
+        <div className="mb-4 text-red-600 text-sm">{accountsError}</div>
+      ) : null}
       <FormCard title={title}>
         {isLoading || accountsLoading ? (
           <Loader />

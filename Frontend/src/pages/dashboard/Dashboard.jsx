@@ -23,6 +23,7 @@ export const Dashboard = () => {
     analytics,
     timeData,
     categoryData,
+    error,
     limitedAccounts,
     limitedCategories,
     totalBalance,
@@ -39,6 +40,9 @@ export const Dashboard = () => {
   return (
     <>
       <div className="px-8 pt-4 pb-8">
+        {error ? (
+          <div className="mb-4 text-red-600 text-sm">{error}</div>
+        ) : null}
         <div className="mb-4">
           <PeriodSelector
             onThisMonth={setThisMonth}

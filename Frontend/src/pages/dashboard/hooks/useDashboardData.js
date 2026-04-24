@@ -30,6 +30,7 @@ export const useDashboardData = () => {
   const [period, setPeriod] = useState({ from: null, to: null });
   const [timeData, setTimeData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
+  const [error, setError] = useState("");
 
   const setThisMonth = () => {
     const now = new Date();
@@ -57,6 +58,7 @@ export const useDashboardData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setError("");
         const params = {};
 
         if (period.from) {
@@ -83,7 +85,7 @@ export const useDashboardData = () => {
 
         setCategoryData(formattedCategoryData);
       } catch (error) {
-        console.error(error);
+        setError(error.message || "Ошибка загрузки данных dashboard");
       }
     };
 
@@ -128,6 +130,7 @@ export const useDashboardData = () => {
     setCustomPeriod,
     timeData,
     categoryData,
+    error,
     limitedAccounts,
     limitedCategories,
     totalBalance,
