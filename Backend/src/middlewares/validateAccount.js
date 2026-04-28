@@ -2,9 +2,9 @@ const { body } = require("express-validator");
 const handleValidationErrors = require("./handleValidationErrors");
 
 const validateAccount = [
-  body("name").notEmpty().withMessage("Name is required"),
-  body("type").notEmpty().withMessage("Type is required"),
-  body("balance").isNumeric().withMessage("Balance must be a number"),
+  body("name").notEmpty().withMessage("Требуется указать имя"),
+  body("type").notEmpty().withMessage("Требуется ввести тип"),
+  body("balance").isNumeric().withMessage("Баланс должен быть числом"),
   handleValidationErrors,
 ];
 

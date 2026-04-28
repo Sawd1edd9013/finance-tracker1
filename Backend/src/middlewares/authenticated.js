@@ -6,7 +6,7 @@ module.exports = async function (req, res, next) {
     const token = req.cookies.token;
 
     if (!token) {
-      return next(new Error("Unauthorized"));
+      return next(new Error("Неавторизованный"));
     }
 
     const data = verify(token);
@@ -14,13 +14,13 @@ module.exports = async function (req, res, next) {
     const user = await User.findById(data.id);
 
     if (!user) {
-      return next(new Error("User not found"));
+      return next(new Error("Пользователь не найден"));
     }
 
     req.user = user;
 
     next();
   } catch (e) {
-    next(new Error("Unauthorized"));
+    next(new Error("Неавторизованный"));
   }
 };

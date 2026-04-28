@@ -17,7 +17,6 @@ const asyncHandler = require("../utils/asyncHandler");
 
 const router = express.Router();
 
-// create transaction
 router.post(
   "/",
   authenticated,
@@ -37,7 +36,6 @@ router.post(
   }),
 );
 
-// get all transactions + filter
 router.get(
   "/",
   authenticated,
@@ -60,7 +58,6 @@ router.get(
   }),
 );
 
-// analytics
 router.get(
   "/analytics",
   authenticated,
@@ -90,7 +87,6 @@ router.get(
   }),
 );
 
-// delete
 router.delete(
   "/:id",
   authenticated,
@@ -101,7 +97,6 @@ router.delete(
   }),
 );
 
-// update
 router.patch(
   "/:id",
   authenticated,

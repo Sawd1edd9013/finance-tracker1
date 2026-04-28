@@ -13,6 +13,11 @@ async function createTransaction({
   date,
 }) {
   const account = await Account.findOne({ _id: accountId, userId });
+
+  if (type === "expense" && account.balance < amount) {
+    throw new Error("Недостаточно средств");
+  }
+
   if (type === "income") {
     account.balance += amount;
   } else {
