@@ -1,36 +1,20 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { UserIcon, OutIcon } from "../icon";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  selectCurrentUser,
-  selectIsAuthChecked,
-} from "../../store/auth/selectors";
-import { fetchCurrentUserThunk, logoutThunk } from "../../store/auth/thunks";
-import React, { useEffect, useState } from "react";
+import { selectCurrentUser } from "../../store/auth/selectors";
+import { logoutThunk } from "../../store/auth/thunks";
+import React, { useState } from "react";
 
 export default function Layout() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const user = useSelector(selectCurrentUser);
-  const isAuthChecked = useSelector(selectIsAuthChecked);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    dispatch(fetchCurrentUserThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (isAuthChecked && !user) {
-      navigate("/login");
-    }
-  }, [isAuthChecked, navigate, user]);
 
   const handleLogout = async () => {
     try {
       setError("");
       await dispatch(logoutThunk());
-      navigate("/login");
     } catch (error) {
       setError(error.message || "Ошибка при выходе из аккаунта");
     }
