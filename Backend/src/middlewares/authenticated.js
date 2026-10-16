@@ -1,26 +1,31 @@
 const { verify } = require("../utils/token");
 const User = require("../models/user");
+const AppError = require("../utils/AppError");
 
-module.exports = async function (req, res, next) {
+module.exports = async function authenticated(req, res, next) {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return next(new AppError("Требуется авторизация", 401));
+  }
+
+  let data;
   try {
-    const token = req.cookies.token;
+    data = verify(token);
+  } catch {
+    return next(new AppError("Сессия истекла, войдите снова", 401));
+  }
 
-    if (!token) {
-      return next(new Error("Неавторизованный"));
-    }
-
-    const data = verify(token);
-
+  try {
     const user = await User.findById(data.id);
 
     if (!user) {
-      return next(new Error("Пользователь не найден"));
+      return next(new AppError("Пользователь не найден", 401));
     }
 
     req.user = user;
-
     next();
-  } catch (e) {
-    next(new Error("Неавторизованный"));
+  } catch (error) {
+    next(error);
   }
 };
