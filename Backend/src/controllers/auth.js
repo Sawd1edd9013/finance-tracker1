@@ -1,4 +1,3 @@
-const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const AppError = require("../utils/AppError");
 const { generate } = require("../utils/token");
@@ -10,9 +9,7 @@ async function register(login, password) {
     throw new AppError("Пользователь с таким логином уже существует", 409);
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const user = await User.create({ login, password: hashedPassword });
+  const user = await User.create({ login, password });
 
   const token = generate({ id: user.id });
 
@@ -26,7 +23,7 @@ async function login(login, password) {
     throw new AppError("Неверный логин или пароль", 401);
   }
 
-  const isPasswordMatch = await bcrypt.compare(password, user.password);
+  const isPasswordMatch = await user.comparePassword(password);
 
   if (!isPasswordMatch) {
     throw new AppError("Неверный логин или пароль", 401);
@@ -72,8 +69,7 @@ async function updateUserSettings(userId, { login, password }) {
   }
 
   if (nextPassword) {
-    const hashedPassword = await bcrypt.hash(nextPassword, 10);
-    user.password = hashedPassword;
+    user.password = nextPassword;
   }
 
   await user.save();
