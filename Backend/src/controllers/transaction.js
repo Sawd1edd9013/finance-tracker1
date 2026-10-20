@@ -1,8 +1,21 @@
 const Transaction = require("../models/transaction");
 const Account = require("../models/account");
+const Category = require("../models/category");
+const AppError = require("../utils/AppError");
 const buildFilter = require("../utils/buildTransactionFilter");
 
-// create
+function getBalanceChange(type, amount) {
+  return type === "income" ? amount : -amount;
+}
+
+async function ensureCategoryExists(categoryId, userId) {
+  const exists = await Category.exists({ _id: categoryId, userId });
+
+  if (!exists) {
+    throw new AppError("Категория не найдена", 404);
+  }
+}
+
 async function createTransaction({
   amount,
   type,
@@ -12,22 +25,25 @@ async function createTransaction({
   userId,
   date,
 }) {
+  const numericAmount = Number(amount);
+
   const account = await Account.findOne({ _id: accountId, userId });
 
-  if (type === "expense" && account.balance < amount) {
-    throw new Error("Недостаточно средств");
+  if (!account) {
+    throw new AppError("Счёт не найден", 404);
   }
 
-  if (type === "income") {
-    account.balance += amount;
-  } else {
-    account.balance -= amount;
+  await ensureCategoryExists(categoryId, userId);
+
+  if (type === "expense" && account.balance < numericAmount) {
+    throw new AppError("Недостаточно средств на счёте", 400);
   }
 
+  account.balance += getBalanceChange(type, numericAmount);
   await account.save();
 
-  const transaction = await Transaction.create({
-    amount,
+  return Transaction.create({
+    amount: numericAmount,
     type,
     accountId,
     categoryId,
@@ -35,11 +51,8 @@ async function createTransaction({
     userId,
     date,
   });
-
-  return transaction;
 }
 
-// get
 async function getTransactions({
   userId,
   from,
@@ -84,72 +97,81 @@ async function getTransactions({
   };
 }
 
-// delete
 async function deleteTransaction(id, userId) {
   const transaction = await Transaction.findOne({ _id: id, userId });
+
+  if (!transaction) {
+    throw new AppError("Операция не найдена", 404);
+  }
 
   const account = await Account.findOne({
     _id: transaction.accountId,
     userId,
   });
 
-  if (transaction.type === "income") {
-    account.balance -= transaction.amount;
-  } else {
-    account.balance += transaction.amount;
+  if (account) {
+    account.balance -= getBalanceChange(transaction.type, transaction.amount);
+    await account.save();
   }
-
-  await account.save();
 
   await transaction.deleteOne();
 
   return true;
 }
 
-//update
 async function updateTransaction(id, userId, data) {
-  const oldTransaction = await Transaction.findOne({ _id: id, userId });
+  const transaction = await Transaction.findOne({ _id: id, userId });
+
+  if (!transaction) {
+    throw new AppError("Операция не найдена", 404);
+  }
 
   const oldAccount = await Account.findOne({
-    _id: oldTransaction.accountId,
+    _id: transaction.accountId,
     userId,
   });
 
-  if (oldTransaction.type === "income") {
-    oldAccount.balance -= oldTransaction.amount;
-  } else {
-    oldAccount.balance += oldTransaction.amount;
+  if (!oldAccount) {
+    throw new AppError("Счёт операции не найден", 404);
   }
+
+  const isSameAccount =
+    String(transaction.accountId) === String(data.accountId);
+
+  const newAccount = isSameAccount
+    ? oldAccount
+    : await Account.findOne({ _id: data.accountId, userId });
+
+  if (!newAccount) {
+    throw new AppError("Счёт не найден", 404);
+  }
+
+  await ensureCategoryExists(data.categoryId, userId);
+
+  oldAccount.balance -= getBalanceChange(transaction.type, transaction.amount);
+
+  if (data.type === "expense" && newAccount.balance < data.amount) {
+    throw new AppError("Недостаточно средств на счёте", 400);
+  }
+
+  newAccount.balance += getBalanceChange(data.type, data.amount);
 
   await oldAccount.save();
 
-  const newAccount = await Account.findOne({
-    _id: data.accountId,
-    userId,
-  });
-
-  if (data.type === "expense" && newAccount.balance < data.amount) {
-    throw new Error("Недостаточно средств");
+  if (!isSameAccount) {
+    await newAccount.save();
   }
 
-  if (data.type === "income") {
-    newAccount.balance += data.amount;
-  } else {
-    newAccount.balance -= data.amount;
-  }
+  transaction.amount = data.amount;
+  transaction.type = data.type;
+  transaction.accountId = data.accountId;
+  transaction.categoryId = data.categoryId;
+  transaction.comment = data.comment;
+  transaction.date = data.date;
 
-  await newAccount.save();
+  await transaction.save();
 
-  oldTransaction.amount = data.amount;
-  oldTransaction.type = data.type;
-  oldTransaction.accountId = data.accountId;
-  oldTransaction.categoryId = data.categoryId;
-  oldTransaction.comment = data.comment;
-  oldTransaction.date = data.date;
-
-  await oldTransaction.save();
-
-  return oldTransaction;
+  return transaction;
 }
 
 module.exports = {

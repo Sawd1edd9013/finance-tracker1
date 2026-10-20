@@ -1,6 +1,6 @@
 const Account = require("../models/account");
+const AppError = require("../utils/AppError");
 
-// create
 async function createAccount({ name, type, balance, userId }) {
   const account = await Account.create({
     name,
@@ -12,7 +12,6 @@ async function createAccount({ name, type, balance, userId }) {
   return account;
 }
 
-// get Accounts for user
 async function getAccounts(userId, { page = 1, limit = 10 } = {}) {
   const normalizedPage = Math.max(Number(page) || 1, 1);
   const normalizedLimit = Math.max(Number(limit) || 10, 1);
@@ -40,11 +39,24 @@ async function getAccounts(userId, { page = 1, limit = 10 } = {}) {
 }
 
 async function deleteAccount(id, userId) {
-  return Account.deleteOne({ _id: id, userId });
+  const result = await Account.deleteOne({ _id: id, userId });
+
+  // deletedCount is 0 when nothing matched: no such account for this user
+  if (result.deletedCount === 0) {
+    throw new AppError("Счёт не найден", 404);
+  }
 }
 
 async function updateAccount(id, userId, data) {
-  return Account.findOneAndUpdate({ _id: id, userId }, data, { new: true });
+  const account = await Account.findOneAndUpdate({ _id: id, userId }, data, {
+    new: true,
+  });
+
+  if (!account) {
+    throw new AppError("Счёт не найден", 404);
+  }
+
+  return account;
 }
 
 module.exports = {

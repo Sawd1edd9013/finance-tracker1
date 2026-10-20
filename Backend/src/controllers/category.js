@@ -1,6 +1,6 @@
 const Category = require("../models/category");
+const AppError = require("../utils/AppError");
 
-// create
 async function createCategory({ name, type, userId }) {
   const category = await Category.create({
     name,
@@ -11,7 +11,6 @@ async function createCategory({ name, type, userId }) {
   return category;
 }
 
-// get
 async function getCategories(userId, { page = 1, limit = 10 } = {}) {
   const normalizedPage = Math.max(Number(page) || 1, 1);
   const normalizedLimit = Math.max(Number(limit) || 10, 1);
@@ -38,14 +37,24 @@ async function getCategories(userId, { page = 1, limit = 10 } = {}) {
   };
 }
 
-// update
 async function updateCategory(id, userId, data) {
-  return Category.findOneAndUpdate({ _id: id, userId }, data, { new: true });
+  const category = await Category.findOneAndUpdate({ _id: id, userId }, data, {
+    new: true,
+  });
+
+  if (!category) {
+    throw new AppError("Категория не найдена", 404);
+  }
+
+  return category;
 }
 
-//delete
 async function deleteCategory(id, userId) {
-  return Category.deleteOne({ _id: id, userId });
+  const result = await Category.deleteOne({ _id: id, userId });
+
+  if (result.deletedCount === 0) {
+    throw new AppError("Категория не найдена", 404);
+  }
 }
 
 module.exports = {
