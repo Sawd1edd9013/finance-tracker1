@@ -53,6 +53,7 @@ async function getCategories(userId, { page, limit } = {}) {
 async function updateCategory(id, userId, data) {
   const category = await Category.findOneAndUpdate({ _id: id, userId }, data, {
     new: true,
+    runValidators: true,
   });
 
   if (!category) {

@@ -63,6 +63,7 @@ async function deleteAccount(id, userId) {
 async function updateAccount(id, userId, data) {
   const account = await Account.findOneAndUpdate({ _id: id, userId }, data, {
     new: true,
+    runValidators: true,
   });
 
   if (!account) {

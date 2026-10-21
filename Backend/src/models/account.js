@@ -5,6 +5,8 @@ const accountSchema = mongoose.Schema(
     name: { type: String, required: true },
     type: {
       type: String,
+      enum: ["debit", "cash", "deposit"],
+      required: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,

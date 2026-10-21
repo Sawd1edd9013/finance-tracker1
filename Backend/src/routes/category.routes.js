@@ -56,6 +56,7 @@ router.delete(
 router.patch(
   "/:id",
   authenticated,
+  validateCategory,
   asyncHandler(async (req, res) => {
     const updated = await updateCategory(req.params.id, req.user.id, {
       name: req.body.name,

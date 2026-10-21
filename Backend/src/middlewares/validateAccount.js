@@ -2,8 +2,10 @@ const { body } = require("express-validator");
 const handleValidationErrors = require("./handleValidationErrors");
 
 const validateAccount = [
-  body("name").notEmpty().withMessage("Требуется указать имя"),
-  body("type").notEmpty().withMessage("Требуется ввести тип"),
+  body("name").trim().notEmpty().withMessage("Требуется указать имя"),
+  body("type")
+    .isIn(["debit", "cash", "deposit"])
+    .withMessage("Некорректный тип счёта"),
   body("balance").isNumeric().withMessage("Баланс должен быть числом"),
   handleValidationErrors,
 ];
