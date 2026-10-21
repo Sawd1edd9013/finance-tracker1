@@ -97,6 +97,16 @@ async function getTransactions({
   };
 }
 
+async function getTransactionById(id, userId) {
+  const transaction = await Transaction.findOne({ _id: id, userId });
+
+  if (!transaction) {
+    throw new AppError("Операция не найдена", 404);
+  }
+
+  return transaction;
+}
+
 async function deleteTransaction(id, userId) {
   const transaction = await Transaction.findOne({ _id: id, userId });
 
@@ -176,6 +186,7 @@ async function updateTransaction(id, userId, data) {
 
 module.exports = {
   getTransactions,
+  getTransactionById,
   createTransaction,
   deleteTransaction,
   updateTransaction,

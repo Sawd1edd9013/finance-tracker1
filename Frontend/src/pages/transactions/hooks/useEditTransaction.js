@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getTransactions, updateTransaction } from "../../../api/transactions";
+import {
+  getTransactionById,
+  updateTransaction,
+} from "../../../api/transactions";
 
 export const useEditTransaction = () => {
   const navigate = useNavigate();
@@ -15,13 +18,9 @@ export const useEditTransaction = () => {
       try {
         setError("");
         setIsLoading(true);
-        const data = await getTransactions();
-        const found = data.data.find((item) => item.id === id);
 
-        if (!found) {
-          setError("Операция не найдена");
-          return;
-        }
+        const response = await getTransactionById(id);
+        const found = response.data;
 
         setTransaction({
           ...found,

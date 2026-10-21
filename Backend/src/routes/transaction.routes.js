@@ -2,6 +2,7 @@ const express = require("express");
 const {
   createTransaction,
   getTransactions,
+  getTransactionById,
   deleteTransaction,
   updateTransaction,
 } = require("../controllers/transaction");
@@ -84,6 +85,16 @@ router.get(
   asyncHandler(async (req, res) => {
     const data = await getTimeAnalytics(req.user.id, req.query);
     res.send({ data });
+  }),
+);
+
+router.get(
+  "/:id",
+  authenticated,
+  asyncHandler(async (req, res) => {
+    const transaction = await getTransactionById(req.params.id, req.user.id);
+
+    res.send({ data: mapTransaction(transaction) });
   }),
 );
 

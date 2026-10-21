@@ -16,6 +16,10 @@ export function getTransactions(filters = {}) {
   return request(`/transactions${query ? `?${query}` : ""}`);
 }
 
+export function getTransactionById(id) {
+  return request(`/transactions/${id}`);
+}
+
 export function createTransaction(data) {
   return request("/transactions", {
     method: "POST",
