@@ -12,10 +12,15 @@ app.use("/api", routes);
 
 app.use((err, req, res, next) => {
   if (err instanceof AppError) {
-    if (err.name === "CastError") {
-      return res.status(400).send({ error: "Некорректный идентификатор" });
-    }
     return res.status(err.status).send({ error: err.message });
+  }
+
+  if (err.name === "CastError") {
+    return res.status(400).send({ error: "Некорректный идентификатор" });
+  }
+
+  if (err.name === "ValidationError") {
+    return res.status(400).send({ error: "Некорректные данные" });
   }
 
   console.error(err);
