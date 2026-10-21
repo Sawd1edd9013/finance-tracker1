@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import { TransactionForm } from "../../components";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { TransactionForm } from "../../components";
 import { createTransaction } from "../../api/transactions";
+import { fetchAccountsThunk } from "../../store/accounts/thunks";
 
 export const CreateTransaction = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
@@ -36,6 +39,8 @@ export const CreateTransaction = () => {
         comment: values.comment || "",
         date: values.date,
       });
+
+      await dispatch(fetchAccountsThunk({ force: true })).catch(() => null);
 
       navigate("/transactions");
     } catch (e) {

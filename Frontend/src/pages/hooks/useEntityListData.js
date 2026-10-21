@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { deleteAccount, getAccounts } from "../../api/accounts";
 import { deleteCategory, getCategories } from "../../api/categories";
+import { useDispatch } from "react-redux";
+import { fetchAccountsThunk } from "../../store/accounts/thunks";
+import { fetchCategoriesThunk } from "../../store/categories/thunks";
 
 const PAGE_LIMIT = 10;
 
 export const useAccountsData = () => {
+  const dispatch = useDispatch();
   const [accounts, setAccounts] = useState([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,6 +55,7 @@ export const useAccountsData = () => {
       setError("");
       await deleteAccount(id);
       await fetchAccountsPage();
+      await dispatch(fetchAccountsThunk({ force: true })).catch(() => null);
     } catch (e) {
       setError(e.message || "Ошибка удаления счета");
     }
@@ -68,6 +73,7 @@ export const useAccountsData = () => {
 };
 
 export const useCategoriesData = () => {
+  const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -114,6 +120,7 @@ export const useCategoriesData = () => {
       setError("");
       await deleteCategory(id);
       await fetchCategoriesPage();
+      await dispatch(fetchCategoriesThunk({ force: true })).catch(() => null);
     } catch (e) {
       setError(e.message || "Ошибка удаления категории");
     }

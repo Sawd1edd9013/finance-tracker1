@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getTransactionById,
   updateTransaction,
 } from "../../../api/transactions";
+import { fetchAccountsThunk } from "../../../store/accounts/thunks";
 
 export const useEditTransaction = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -68,6 +71,8 @@ export const useEditTransaction = () => {
         comment: values.comment || "",
         date: values.date,
       });
+
+      await dispatch(fetchAccountsThunk({ force: true })).catch(() => null);
 
       navigate("/transactions");
     } catch (e) {
