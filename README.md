@@ -7,13 +7,16 @@ Fullstack-приложение для учёта личных финансов. 
 ## Стек технологий
 
 **Frontend**
+
 - React
-- Redux (actions / reducers / thunks / selectors)
+- Redux (actions / reducers / thunks / selectors), Reselect
 - React Router
+- Recharts
 - Tailwind CSS
 - Vite
 
 **Backend**
+
 - Node.js
 - Express
 - MongoDB + Mongoose
@@ -24,16 +27,18 @@ Fullstack-приложение для учёта личных финансов. 
 
 ## Функциональность
 
-- Регистрация и авторизация пользователя (JWT + cookies)
+- Регистрация и авторизация пользователя (JWT + cookies), защита приватных страниц
 - Управление счетами (создание, редактирование, удаление)
 - Управление категориями доходов и расходов
-- Добавление и фильтрация транзакций
+- Добавление и фильтрация транзакций с автоматическим пересчётом баланса счетов
 - Дашборд с аналитикой: графики (линейный, круговой), статистика по периодам
 - Пагинация списков
+- Централизованная обработка ошибок на сервере с корректными HTTP-статусами
 
 ---
 
 ## Структура проекта
+
 ```
 finance-tracker1/
 ├── Backend/
@@ -43,24 +48,48 @@ finance-tracker1/
 │       ├── routes/        # API-маршруты
 │       ├── middlewares/   # Аутентификация, валидация
 │       ├── mappers/       # Форматирование данных
-│       └── utils/         # Вспомогательные функции
+│       └── utils/         # Вспомогательные функции и класс ошибок AppError
 └── Frontend/
     └── src/
         ├── api/           # Запросы к серверу
-        ├── components/    # UI-компоненты (таблицы, формы, иконки)
-        ├── pages/         # Страницы приложения
+        ├── components/    # UI-компоненты (таблицы, формы, иконки, защита маршрутов)
+        ├── constants/     # Подписи для типов счетов и категорий
+        ├── pages/         # Страницы приложения и их хуки
         ├── store/         # Redux: actions, reducers, thunks, selectors
         └── routes/        # Роутинг
 ```
+
 ---
 
 ## Запуск проекта
 
 ### Требования
-- Node.js v18+
-- MongoDB (локально или MongoDB Atlas)
 
-### Backend
+- Node.js v18+
+- Docker (для запуска MongoDB) — или локально установленная MongoDB / MongoDB Atlas
+
+### 1. Клонировать репозиторий
+
+```bash
+git clone https://github.com/Sawd1edd9013/finance-tracker1.git
+cd finance-tracker1
+```
+
+### 2. Запустить MongoDB
+
+```bash
+docker run -d --name finance-tracker-mongo -p 27017:27017 mongo:8
+```
+
+При следующих запусках контейнер уже создан, достаточно его включить:
+
+```bash
+docker start finance-tracker-mongo
+```
+
+Или кнопкой запуска в Docker Desktop.
+
+### 3. Backend
 
 ```bash
 cd Backend
@@ -79,7 +108,11 @@ JWT_SECRET=your_secret_key
 npm run dev
 ```
 
-### Frontend
+Сервер запустится на `http://localhost:3005`.
+
+### 4. Frontend
+
+В новом терминале:
 
 ```bash
 cd Frontend
@@ -87,22 +120,22 @@ npm install
 npm run dev
 ```
 
-Приложение откроется на `http://localhost:5173`
+Приложение откроется на `http://localhost:5173`. Запросы к `/api` проксируются на бэкенд (настройка в `vite.config.js`).
 
 ---
 
 ## API-эндпоинты
 
-| Метод | URL | Описание |
-|-------|-----|----------|
-| POST | /api/auth/register | Регистрация |
-| POST | /api/auth/login | Авторизация |
-| GET | /api/accounts | Список счетов |
-| POST | /api/accounts | Создать счёт |
-| GET | /api/categories | Список категорий |
-| POST | /api/transactions | Добавить транзакцию |
-| GET | /api/transactions | Список транзакций с фильтрацией |
-| GET | /api/transactions/analytics | Аналитика по транзакциям |
+| Метод | URL                         | Описание                        |
+| ----- | --------------------------- | ------------------------------- |
+| POST  | /api/auth/register          | Регистрация                     |
+| POST  | /api/auth/login             | Авторизация                     |
+| GET   | /api/accounts               | Список счетов                   |
+| POST  | /api/accounts               | Создать счёт                    |
+| GET   | /api/categories             | Список категорий                |
+| POST  | /api/transactions           | Добавить транзакцию             |
+| GET   | /api/transactions           | Список транзакций с фильтрацией |
+| GET   | /api/transactions/analytics | Аналитика по транзакциям        |
 
 ---
 
