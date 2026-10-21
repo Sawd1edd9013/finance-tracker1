@@ -1,3 +1,5 @@
+import { createSelector } from "reselect";
+
 export const selectAccountsState = (state) => state.accounts;
 
 export const selectAccounts = (state) => state.accounts.items;
@@ -8,11 +10,12 @@ export const selectAccountsIsLoaded = (state) => state.accounts.isLoaded;
 
 export const selectAccountsError = (state) => state.accounts.error;
 
-export const selectAccountsMap = (state) =>
-  state.accounts.items.reduce((acc, account) => {
+export const selectAccountsMap = createSelector([selectAccounts], (accounts) =>
+  accounts.reduce((acc, account) => {
     acc[account.id] = account.name;
     return acc;
-  }, {});
+  }, {}),
+);
 
 export const selectAccountById = (state, id) =>
   state.accounts.items.find((account) => account.id === id) || null;
