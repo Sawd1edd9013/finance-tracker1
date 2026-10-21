@@ -9,6 +9,7 @@ const authenticated = require("../middlewares/authenticated");
 const mapCategory = require("../mappers/mapCategory");
 const validateCategory = require("../middlewares/validateCategory");
 const asyncHandler = require("../utils/asyncHandler");
+const { validateCategoryDelete } = require("../middlewares/validateDelete");
 
 const router = express.Router();
 
@@ -46,8 +47,12 @@ router.get(
 router.delete(
   "/:id",
   authenticated,
+  validateCategoryDelete,
   asyncHandler(async (req, res) => {
-    await deleteCategory(req.params.id, req.user.id);
+    await deleteCategory(req.params.id, req.user.id, {
+      strategy: req.query.strategy,
+      targetId: req.query.targetId,
+    });
 
     res.send({ error: null });
   }),

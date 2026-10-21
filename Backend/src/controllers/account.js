@@ -1,4 +1,5 @@
 const Account = require("../models/account");
+const Transaction = require("../models/transaction");
 const AppError = require("../utils/AppError");
 
 async function createAccount({ name, type, balance, userId }) {
@@ -51,26 +52,27 @@ async function getAccounts(userId, { page, limit } = {}) {
   };
 }
 
-async function deleteAccount(id, userId) {
-  const result = await Account.deleteOne({ _id: id, userId });
-
-  // deletedCount is 0 when nothing matched: no such account for this user
-  if (result.deletedCount === 0) {
-    throw new AppError("Счёт не найден", 404);
-  }
-}
-
-async function updateAccount(id, userId, data) {
-  const account = await Account.findOneAndUpdate({ _id: id, userId }, data, {
-    new: true,
-    runValidators: true,
-  });
+async function deleteAccount(id, userId, { strategy } = {}) {
+  const account = await Account.findOne({ _id: id, userId });
 
   if (!account) {
     throw new AppError("Счёт не найден", 404);
   }
 
-  return account;
+  const hasTransactions = await Transaction.exists({ accountId: id, userId });
+
+  if (hasTransactions) {
+    if (strategy !== "delete") {
+      throw new AppError(
+        "По счёту есть операции: подтвердите удаление вместе с ними",
+        409,
+      );
+    }
+
+    await Transaction.deleteMany({ accountId: id, userId });
+  }
+
+  await account.deleteOne();
 }
 
 module.exports = {

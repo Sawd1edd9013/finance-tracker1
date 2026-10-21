@@ -9,6 +9,7 @@ const authenticated = require("../middlewares/authenticated");
 const mapAccount = require("../mappers/mapAccount");
 const validateAccount = require("../middlewares/validateAccount");
 const asyncHandler = require("../utils/asyncHandler");
+const { validateAccountDelete } = require("../middlewares/validateDelete");
 
 const router = express.Router();
 
@@ -47,8 +48,11 @@ router.get(
 router.delete(
   "/:id",
   authenticated,
+  validateAccountDelete,
   asyncHandler(async (req, res) => {
-    await deleteAccount(req.params.id, req.user.id);
+    await deleteAccount(req.params.id, req.user.id, {
+      strategy: req.query.strategy,
+    });
 
     res.send({ error: null });
   }),
