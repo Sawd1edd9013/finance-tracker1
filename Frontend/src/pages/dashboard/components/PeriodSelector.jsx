@@ -40,13 +40,10 @@ export const PeriodSelector = ({
   const handleApply = () => {
     if (!from || !to) return;
 
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-
-    if (fromDate > toDate) return;
+    if (from > to) return;
 
     setSelectedPeriod("custom");
-    onCustomPeriod(fromDate, toDate);
+    onCustomPeriod(from, to);
   };
 
   return (

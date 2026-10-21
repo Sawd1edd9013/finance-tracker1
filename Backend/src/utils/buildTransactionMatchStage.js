@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const buildDateRange = require("./buildDateRange");
 
 module.exports = function buildTransactionMatchStage({
   userId,
@@ -22,20 +23,10 @@ module.exports = function buildTransactionMatchStage({
     match.categoryId = new mongoose.Types.ObjectId(categoryId);
   }
 
-  if (from || to) {
-    match.date = {};
+  const dateRange = buildDateRange(from, to);
 
-    if (from) {
-      const fromDate = new Date(from);
-      fromDate.setHours(0, 0, 0, 0);
-      match.date.$gte = fromDate;
-    }
-
-    if (to) {
-      const toDate = new Date(to);
-      toDate.setHours(23, 59, 59, 999);
-      match.date.$lte = toDate;
-    }
+  if (dateRange) {
+    match.date = dateRange;
   }
 
   return match;

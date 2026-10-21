@@ -16,6 +16,7 @@ import {
   selectCategoriesMap,
 } from "../../../store/categories/selectors";
 import { fetchCategoriesThunk } from "../../../store/categories/thunks";
+import { toDateString } from "../../../utils/toDateString";
 
 export const useDashboardData = () => {
   const dispatch = useDispatch();
@@ -34,16 +35,20 @@ export const useDashboardData = () => {
 
   const setThisMonth = () => {
     const now = new Date();
-    const from = new Date(now.getFullYear(), now.getMonth(), 1);
-    const to = new Date();
-    setPeriod({ from, to });
+
+    setPeriod({
+      from: toDateString(new Date(now.getFullYear(), now.getMonth(), 1)),
+      to: toDateString(now),
+    });
   };
 
   const setLastMonth = () => {
     const now = new Date();
-    const from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const to = new Date(now.getFullYear(), now.getMonth(), 0);
-    setPeriod({ from, to });
+
+    setPeriod({
+      from: toDateString(new Date(now.getFullYear(), now.getMonth() - 1, 1)),
+      to: toDateString(new Date(now.getFullYear(), now.getMonth(), 0)),
+    });
   };
 
   const setCustomPeriod = (from, to) => {
@@ -62,8 +67,8 @@ export const useDashboardData = () => {
         const params = {};
 
         if (period.from) {
-          params.from = period.from.toISOString();
-          params.to = period.to.toISOString();
+          params.from = period.from;
+          params.to = period.to;
         }
 
         const [transactionsRes, analyticsRes, timeRes, categoryRes] =

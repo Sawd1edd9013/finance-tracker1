@@ -26,7 +26,10 @@ export const RecentTable = ({
         rowKey={(row) => row.id}
         renderCell={(col, row) => {
           if (col.key === "date") {
-            return new Date(row.date || row.createdAt).toLocaleDateString();
+            return new Date(row.date || row.createdAt).toLocaleDateString(
+              "ru-RU",
+              { timeZone: "UTC" },
+            );
           }
           if (col.key === "account") {
             return accountsMap[row.accountId] || "—";

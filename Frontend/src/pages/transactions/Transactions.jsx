@@ -66,7 +66,9 @@ export const Transactions = () => {
             rowKey={(row) => row.id}
             renderCell={(col, row) => {
               if (col.key === "date") {
-                return new Date(row.date).toLocaleDateString();
+                return new Date(row.date).toLocaleDateString("ru-RU", {
+                  timeZone: "UTC",
+                });
               }
 
               if (col.key === "account") {
