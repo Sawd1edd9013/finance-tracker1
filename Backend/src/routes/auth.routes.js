@@ -8,11 +8,17 @@ const {
 const mapUser = require("../mappers/mapUser");
 const asyncHandler = require("../utils/asyncHandler");
 const authenticated = require("../middlewares/authenticated");
+const {
+  validateRegister,
+  validateLogin,
+  validateSettings,
+} = require("../middlewares/validateAuth");
 
 const router = express.Router();
 
 router.post(
   "/register",
+  validateRegister,
   asyncHandler(async (req, res) => {
     const { user, token } = await register(req.body.login, req.body.password);
 
@@ -24,6 +30,7 @@ router.post(
 
 router.post(
   "/login",
+  validateLogin,
   asyncHandler(async (req, res) => {
     const { user, token } = await login(req.body.login, req.body.password);
 
@@ -56,6 +63,7 @@ router.post("/logout", (req, res) => {
 router.patch(
   "/settings",
   authenticated,
+  validateSettings,
   asyncHandler(async (req, res) => {
     const user = await updateUserSettings(req.user.id, {
       login: req.body.login,
