@@ -1,7 +1,7 @@
 import React from "react";
 import { Table } from "../../../components";
 import { useNavigate } from "react-router-dom";
-import { CATEGORY_TYPE_LABELS } from "../../../constans/categoryTypeLabels";
+import { CATEGORY_TYPE_LABELS } from "../../../constants/categoryTypeLabels";
 
 export const RecentTable = ({
   data = [],

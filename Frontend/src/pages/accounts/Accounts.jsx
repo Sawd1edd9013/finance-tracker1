@@ -1,7 +1,7 @@
 import { PencilIcon, TrashIcon } from "../../components/icon";
 import { Loader, PageHeader, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
-import { ACCOUNT_TYPE_LABELS } from "../../constans/accountTypeLabels";
+import { ACCOUNT_TYPE_LABELS } from "../../constants/accountTypeLabels";
 import { useAccountsData } from "../hooks/useEntityListData";
 import React from "react";
 

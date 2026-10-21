@@ -2,7 +2,7 @@ import { PencilIcon, TrashIcon } from "../../components/icon";
 import { Loader, PageHeader, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
 import React from "react";
-import { CATEGORY_TYPE_LABELS } from "../../constans/categoryTypeLabels";
+import { CATEGORY_TYPE_LABELS } from "../../constants/categoryTypeLabels";
 import { useCategoriesData } from "../hooks/useEntityListData";
 
 export const Categories = () => {
