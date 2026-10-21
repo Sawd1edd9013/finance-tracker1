@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("/fonts/font-awesome/font-awesome.css");
 * {
   box-sizing: border-box;
 }
