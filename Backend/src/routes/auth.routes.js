@@ -16,6 +16,14 @@ const {
 
 const router = express.Router();
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+};
+
+const TOKEN_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+
 router.post(
   "/register",
   validateRegister,
@@ -23,7 +31,7 @@ router.post(
     const { user, token } = await register(req.body.login, req.body.password);
 
     res
-      .cookie("token", token, { httpOnly: true })
+      .cookie("token", token, { ...COOKIE_OPTIONS, maxAge: TOKEN_MAX_AGE })
       .send({ error: null, user: mapUser(user) });
   }),
 );
@@ -35,7 +43,7 @@ router.post(
     const { user, token } = await login(req.body.login, req.body.password);
 
     res
-      .cookie("token", token, { httpOnly: true })
+      .cookie("token", token, { ...COOKIE_OPTIONS, maxAge: TOKEN_MAX_AGE })
       .send({ error: null, user: mapUser(user) });
   }),
 );
@@ -56,7 +64,7 @@ router.get(
 );
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", COOKIE_OPTIONS);
   res.send({ error: null });
 });
 
