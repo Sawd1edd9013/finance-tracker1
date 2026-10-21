@@ -11,16 +11,29 @@ async function createCategory({ name, type, userId }) {
   return category;
 }
 
-async function getCategories(userId, { page = 1, limit = 10 } = {}) {
+async function getCategories(userId, { page, limit } = {}) {
+  const query = Category.find({ userId }).sort({ _id: -1 });
+
+  if (!page && !limit) {
+    const data = await query;
+
+    return {
+      data,
+      pagination: {
+        page: 1,
+        limit: data.length,
+        total: data.length,
+        pages: 1,
+      },
+    };
+  }
+
   const normalizedPage = Math.max(Number(page) || 1, 1);
   const normalizedLimit = Math.max(Number(limit) || 10, 1);
   const skip = (normalizedPage - 1) * normalizedLimit;
 
   const [data, total] = await Promise.all([
-    Category.find({ userId })
-      .sort({ _id: -1 })
-      .skip(skip)
-      .limit(normalizedLimit),
+    query.skip(skip).limit(normalizedLimit),
     Category.countDocuments({ userId }),
   ]);
 
