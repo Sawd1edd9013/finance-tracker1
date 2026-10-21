@@ -33,8 +33,14 @@ export function updateAccount(id, { name, type, balance }) {
   });
 }
 
-export function deleteAccount(id) {
-  return request(`/accounts/${id}`, {
+export function deleteAccount(id, { strategy } = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (strategy) searchParams.append("strategy", strategy);
+
+  const query = searchParams.toString();
+
+  return request(`/accounts/${id}${query ? `?${query}` : ""}`, {
     method: "DELETE",
   });
 }

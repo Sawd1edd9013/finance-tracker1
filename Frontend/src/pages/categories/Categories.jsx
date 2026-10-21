@@ -1,5 +1,5 @@
 import { PencilIcon, TrashIcon } from "../../components/icon";
-import { Loader, PageHeader, Table } from "../../components";
+import { DeleteDialog, Loader, PageHeader, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
 import React from "react";
 import { CATEGORY_TYPE_LABELS } from "../../constants/categoryTypeLabels";
@@ -8,15 +8,24 @@ import { useCategoriesData } from "../hooks/useEntityListData";
 export const Categories = () => {
   const {
     categories,
+    allCategories,
     error,
     isLoading,
     page,
     setPage,
     pagination,
-    handleDelete,
+    deleteDialog,
   } = useCategoriesData();
 
   const navigate = useNavigate();
+
+  const moveTargets = deleteDialog.target
+    ? allCategories.filter(
+        (category) =>
+          category.type === deleteDialog.target.type &&
+          category.id !== deleteDialog.target.id,
+      )
+    : [];
 
   const columns = [
     { key: "name", title: "Название", align: "left" },
@@ -65,7 +74,7 @@ export const Categories = () => {
                     </button>
 
                     <button
-                      onClick={() => handleDelete(row.id)}
+                      onClick={() => deleteDialog.open(row)}
                       className="text-slate-900 hover:text-red-600"
                     >
                       <TrashIcon />
@@ -98,6 +107,23 @@ export const Categories = () => {
           </>
         )}
       </div>
+
+      {deleteDialog.target && (
+        <DeleteDialog
+          key={deleteDialog.target.id}
+          title={`Удалить категорию «${deleteDialog.target.name}»?`}
+          transactionsCount={deleteDialog.transactionsCount}
+          isCountLoading={deleteDialog.isCountLoading}
+          moveTargets={moveTargets}
+          moveLabel="Перенести операции в другую категорию"
+          deleteLabel="Удалить вместе с операциями"
+          deleteWarning="Операции будут удалены безвозвратно, а балансы счетов пересчитаны."
+          error={deleteDialog.error}
+          isDeleting={deleteDialog.isDeleting}
+          onConfirm={deleteDialog.confirm}
+          onCancel={deleteDialog.close}
+        />
+      )}
     </div>
   );
 };

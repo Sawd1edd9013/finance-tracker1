@@ -11,3 +11,4 @@ export * from "./forms/AccountForm.jsx";
 export * from "./forms/CategoryForm.jsx";
 export * from "./forms/TransactionForm.jsx";
 export * from "./loader/Loader.jsx";
+export * from "./delete-dialog/DeleteDialog.jsx";

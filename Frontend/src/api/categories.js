@@ -31,8 +31,15 @@ export function updateCategory(id, { name, type }) {
   });
 }
 
-export function deleteCategory(id) {
-  return request(`/categories/${id}`, {
+export function deleteCategory(id, { strategy, targetId } = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (strategy) searchParams.append("strategy", strategy);
+  if (targetId) searchParams.append("targetId", targetId);
+
+  const query = searchParams.toString();
+
+  return request(`/categories/${id}${query ? `?${query}` : ""}`, {
     method: "DELETE",
   });
 }

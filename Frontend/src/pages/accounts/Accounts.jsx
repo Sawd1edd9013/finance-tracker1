@@ -1,5 +1,5 @@
 import { PencilIcon, TrashIcon } from "../../components/icon";
-import { Loader, PageHeader, Table } from "../../components";
+import { DeleteDialog, Loader, PageHeader, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
 import { ACCOUNT_TYPE_LABELS } from "../../constants/accountTypeLabels";
 import { useAccountsData } from "../hooks/useEntityListData";
@@ -15,7 +15,7 @@ export const Accounts = () => {
     setPage,
     pagination,
     isLoading,
-    handleDelete,
+    deleteDialog,
   } = useAccountsData();
 
   const columns = [
@@ -68,7 +68,7 @@ export const Accounts = () => {
                     </button>
 
                     <button
-                      onClick={() => handleDelete(row.id)}
+                      onClick={() => deleteDialog.open(row)}
                       className="text-slate-900 hover:text-red-600"
                     >
                       <TrashIcon />
@@ -101,6 +101,20 @@ export const Accounts = () => {
           </>
         )}
       </div>
+
+      {deleteDialog.target && (
+        <DeleteDialog
+          key={deleteDialog.target.id}
+          title={`Удалить счёт «${deleteDialog.target.name}»?`}
+          transactionsCount={deleteDialog.transactionsCount}
+          isCountLoading={deleteDialog.isCountLoading}
+          deleteWarning="Счёт будет удалён вместе со всеми его операциями. Это действие нельзя отменить."
+          error={deleteDialog.error}
+          isDeleting={deleteDialog.isDeleting}
+          onConfirm={deleteDialog.confirm}
+          onCancel={deleteDialog.close}
+        />
+      )}
     </div>
   );
 };
