@@ -26,6 +26,12 @@ const validateTransaction = [
     .isMongoId()
     .withMessage("Некорректный идентификатор категории"),
 
+  body("date")
+    .notEmpty()
+    .withMessage("Дата обязательна")
+    .isISO8601()
+    .withMessage("Некорректная дата"),
+
   body("comment")
     .optional()
     .isString()

@@ -35,14 +35,7 @@ async function createTransaction({
 
   await ensureCategoryExists(categoryId, userId);
 
-  if (type === "expense" && account.balance < numericAmount) {
-    throw new AppError("Недостаточно средств на счёте", 400);
-  }
-
-  account.balance += getBalanceChange(type, numericAmount);
-  await account.save();
-
-  return Transaction.create({
+  const transaction = new Transaction({
     amount: numericAmount,
     type,
     accountId,
@@ -51,6 +44,19 @@ async function createTransaction({
     userId,
     date,
   });
+
+  await transaction.validate();
+
+  if (type === "expense" && account.balance < numericAmount) {
+    throw new AppError("Недостаточно средств на счёте", 400);
+  }
+
+  account.balance += getBalanceChange(type, numericAmount);
+
+  await account.save();
+  await transaction.save();
+
+  return transaction;
 }
 
 async function getTransactions({
@@ -166,18 +172,20 @@ async function updateTransaction(id, userId, data) {
 
   newAccount.balance += getBalanceChange(data.type, data.amount);
 
-  await oldAccount.save();
-
-  if (!isSameAccount) {
-    await newAccount.save();
-  }
-
   transaction.amount = data.amount;
   transaction.type = data.type;
   transaction.accountId = data.accountId;
   transaction.categoryId = data.categoryId;
   transaction.comment = data.comment;
   transaction.date = data.date;
+
+  await transaction.validate();
+
+  await oldAccount.save();
+
+  if (!isSameAccount) {
+    await newAccount.save();
+  }
 
   await transaction.save();
 
