@@ -1,4 +1,4 @@
-export * from "./icon/icon";
+export * from "./icon/Icon";
 export * from "./Layout/Layout.jsx";
 export * from "./filters/FilterPanel.jsx";
 export * from "./page/PageHeader.jsx";

@@ -1,4 +1,4 @@
-import { Icon } from "./icon";
+import { Icon } from "./Icon";
 import React from "react";
 
 export const CategoryIcon = () => {
