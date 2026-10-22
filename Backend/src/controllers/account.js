@@ -75,6 +75,19 @@ async function deleteAccount(id, userId, { strategy } = {}) {
   await account.deleteOne();
 }
 
+async function updateAccount(id, userId, data) {
+  const account = await Account.findOneAndUpdate({ _id: id, userId }, data, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!account) {
+    throw new AppError("Счёт не найден", 404);
+  }
+
+  return account;
+}
+
 module.exports = {
   createAccount,
   getAccounts,
