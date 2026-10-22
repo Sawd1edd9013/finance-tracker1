@@ -11,3 +11,4 @@ export * from "./categories/CreateCategory.jsx";
 export * from "./categories/EditCategory.jsx";
 export * from "./settings/Settings.jsx";
 export * from "./dashboard/Dashboard.jsx";
+export * from "./not-found/NotFound.jsx";

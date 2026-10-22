@@ -16,6 +16,7 @@ import {
   Settings,
   Login,
   Register,
+  NotFound,
 } from "../pages";
 
 export const AppRoutes = () => {
@@ -43,6 +44,7 @@ export const AppRoutes = () => {
           <Route path="settings" element={<Settings />} />
         </Route>
       </Route>
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
