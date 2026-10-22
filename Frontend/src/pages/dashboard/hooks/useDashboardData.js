@@ -97,21 +97,9 @@ export const useDashboardData = () => {
     fetchData();
   }, [categoriesMap, period]);
 
-  const limitedAccounts = useMemo(
-    () =>
-      [...accounts]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5),
-    [accounts],
-  );
+  const limitedAccounts = useMemo(() => accounts.slice(0, 5), [accounts]);
 
-  const limitedCategories = useMemo(
-    () =>
-      [...categories]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 5),
-    [categories],
-  );
+  const limitedCategories = useMemo(() => categories.slice(0, 5), [categories]);
 
   const totalBalance = useMemo(
     () =>
