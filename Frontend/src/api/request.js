@@ -1,11 +1,13 @@
 export async function request(path, options = {}) {
+  const { headers, ...restOptions } = options;
+
   const response = await fetch(`/api${path}`, {
+    ...restOptions,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(options.headers || {}),
+      ...headers,
     },
-    credentials: "include",
-    ...options,
   });
 
   const data = await response.json().catch(() => null);
