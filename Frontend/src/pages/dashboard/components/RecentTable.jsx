@@ -1,7 +1,8 @@
-import React from "react";
 import { Table } from "../../../components";
 import { useNavigate } from "react-router-dom";
 import { CATEGORY_TYPE_LABELS } from "../../../constants/categoryTypeLabels";
+import { formatMoney } from "../../../utils/formatMoney";
+import React from "react";
 
 export const RecentTable = ({
   data = [],
@@ -44,7 +45,7 @@ export const RecentTable = ({
           }
 
           if (col.key === "amount") {
-            return `${row.amount} ₽`;
+            return formatMoney(row.amount);
           }
 
           return row[col.key];

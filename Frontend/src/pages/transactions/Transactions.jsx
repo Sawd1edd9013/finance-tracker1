@@ -3,6 +3,7 @@ import { Loader, PageHeader, FilterPanel, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
 import { CATEGORY_TYPE_LABELS } from "../../constants/categoryTypeLabels";
 import { useTransactionsData } from "./hooks/useTransactionsData";
+import { formatMoney } from "../../utils/formatMoney";
 import React from "react";
 
 export const Transactions = () => {
@@ -84,7 +85,7 @@ export const Transactions = () => {
               }
 
               if (col.key === "amount") {
-                return `${row.amount} ₽`;
+                return formatMoney(row.amount);
               }
 
               if (col.key !== "actions") return row[col.key];

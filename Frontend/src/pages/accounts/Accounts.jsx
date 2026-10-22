@@ -3,6 +3,7 @@ import { DeleteDialog, Loader, PageHeader, Table } from "../../components";
 import { useNavigate } from "react-router-dom";
 import { ACCOUNT_TYPE_LABELS } from "../../constants/accountTypeLabels";
 import { useAccountsData } from "../hooks/useEntityListData";
+import { formatMoney } from "../../utils/formatMoney";
 import React from "react";
 
 export const Accounts = () => {
@@ -54,6 +55,10 @@ export const Accounts = () => {
               renderCell={(col, row) => {
                 if (col.key === "type") {
                   return ACCOUNT_TYPE_LABELS[row.type] || row.type;
+                }
+
+                if (col.key === "balance") {
+                  return formatMoney(row.balance);
                 }
 
                 if (col.key !== "actions") return row[col.key];

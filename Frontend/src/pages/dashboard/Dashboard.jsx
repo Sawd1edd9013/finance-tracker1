@@ -11,6 +11,7 @@ import { LineChartComponent } from "./components/charts/LineChart";
 import { PieChartComponent } from "./components/charts/PieChart";
 import React, { useState } from "react";
 import { useDashboardData } from "./hooks/useDashboardData";
+import { formatMoney } from "../../utils/formatMoney";
 
 export const Dashboard = () => {
   const [expandedChart, setExpandedChart] = useState(null);
@@ -52,19 +53,24 @@ export const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-4 gap-4 mb-4">
-          <StatCard title="Баланс" value={`${totalBalance} ₽`} />
-          <StatCard title="Доходы" value={`${analytics?.totalIncome || 0} ₽`} />
+          <StatCard title="Баланс" value={formatMoney(totalBalance)} />
+          <StatCard
+            title="Доходы"
+            value={formatMoney(analytics?.totalIncome)}
+          />
           <StatCard
             title="Расходы"
-            value={`${analytics?.totalExpense || 0} ₽`}
+            value={formatMoney(analytics?.totalExpense)}
           />
-          <StatCard title="Чистый результат" value={`${netResult} ₽`} />
+          <StatCard title="Чистый результат" value={formatMoney(netResult)} />
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <Panel title="Счета">
             <MiniList
-              items={limitedAccounts.map((a) => `${a.name} — ${a.balance} ₽`)}
+              items={limitedAccounts.map(
+                (a) => `${a.name} — ${formatMoney(a.balance)}`,
+              )}
               footerText="Перейти ко всем →"
               onFooterClick={() => navigate("/accounts")}
             />
