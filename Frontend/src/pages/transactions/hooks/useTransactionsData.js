@@ -53,6 +53,8 @@ export const useTransactionsData = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    let isCancelled = false;
+
     const fetchTransactionsData = async () => {
       try {
         setError("");
@@ -64,6 +66,8 @@ export const useTransactionsData = () => {
           limit: PAGE_LIMIT,
         });
 
+        if (isCancelled) return;
+
         setTransactions(data.data);
         setPagination(
           data.pagination || {
@@ -74,13 +78,20 @@ export const useTransactionsData = () => {
           },
         );
       } catch (e) {
+        if (isCancelled) return;
         setError(e.message || "Ошибка загрузки операций");
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchTransactionsData();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [filters, page]);
 
   const handleFilterChange = (key, value) => {

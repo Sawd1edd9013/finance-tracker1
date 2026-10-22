@@ -30,7 +30,7 @@ export const useDashboardData = () => {
   const [analytics, setAnalytics] = useState(null);
   const [period, setPeriod] = useState({ from: null, to: null });
   const [timeData, setTimeData] = useState([]);
-  const [categoryData, setCategoryData] = useState([]);
+  const [categoryStats, setCategoryStats] = useState([]);
   const [error, setError] = useState("");
 
   const setThisMonth = () => {
@@ -61,6 +61,8 @@ export const useDashboardData = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    let isCancelled = false;
+
     const fetchData = async () => {
       try {
         setError("");
@@ -73,29 +75,39 @@ export const useDashboardData = () => {
 
         const [transactionsRes, analyticsRes, timeRes, categoryRes] =
           await Promise.all([
-            getTransactions(params),
+            getTransactions({ ...params, limit: 5 }),
             getAnalytics(params),
             getTimeAnalytics(params),
             getCategoryAnalytics(params),
           ]);
 
-        setTransactions(transactionsRes.data.slice(0, 5));
+        if (isCancelled) return;
+
+        setTransactions(transactionsRes.data);
         setAnalytics(analyticsRes.data);
         setTimeData(timeRes.data);
-
-        const formattedCategoryData = categoryRes.data.map((item) => ({
-          name: categoriesMap[item.categoryId] || "Без категории",
-          value: item.total,
-        }));
-
-        setCategoryData(formattedCategoryData);
+        setCategoryStats(categoryRes.data);
       } catch (error) {
+        if (isCancelled) return;
         setError(error.message || "Ошибка загрузки данных dashboard");
       }
     };
 
     fetchData();
-  }, [categoriesMap, period]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [period]);
+
+  const categoryData = useMemo(
+    () =>
+      categoryStats.map((item) => ({
+        name: categoriesMap[item.categoryId] || "Без категории",
+        value: item.total,
+      })),
+    [categoryStats, categoriesMap],
+  );
 
   const limitedAccounts = useMemo(() => accounts.slice(0, 5), [accounts]);
 
