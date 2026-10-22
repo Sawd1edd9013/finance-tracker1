@@ -64,8 +64,6 @@ export const useAuthForm = ({ mode }) => {
       } else {
         await dispatch(loginThunk(values));
       }
-
-      navigate("/");
     } catch {
       // Ошибка уже сохраняется в Redux
     }
